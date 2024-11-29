@@ -18,23 +18,23 @@ type PlayerJs struct {
 	Player json.RawMessage `json:"player"`
 }
 
-func (self PlayerJs) ToPlayer() Player {
-	switch self.Sort {
+func (playerJs PlayerJs) ToPlayer() Player {
+	switch playerJs.Sort {
 	case "rlbot":
 		var correct BotInfo
-		if err := json.Unmarshal([]byte(self.Player), &correct); err != nil {
+		if err := json.Unmarshal([]byte(playerJs.Player), &correct); err != nil {
 			log.Fatal("unable to unmarshal PlayerJs")
 		}
 		return correct
 	case "psyonix":
 		var correct PsyonixBotInfo
-		if err := json.Unmarshal([]byte(self.Player), &correct); err != nil {
+		if err := json.Unmarshal([]byte(playerJs.Player), &correct); err != nil {
 			log.Fatal("unable to unmarshal PlayerJs")
 		}
 		return correct
 	case "human":
 		var correct HumanInfo
-		if err := json.Unmarshal([]byte(self.Player), &correct); err != nil {
+		if err := json.Unmarshal([]byte(playerJs.Player), &correct); err != nil {
 			log.Fatal("unable to unmarshal PlayerJs")
 		}
 		return correct
@@ -62,7 +62,7 @@ func (info PsyonixBotInfo) ToPlayerConfig(team uint32) *flat.PlayerConfiguration
 		},
 		Name:       "Psyonix Bot",
 		Team:       team,
-		Location:   "",
+		RootDir:    "",
 		RunCommand: "",
 		Loadout:    &flat.PlayerLoadoutT{},
 		SpawnId:    0,
@@ -80,7 +80,7 @@ func (info HumanInfo) ToPlayerConfig(team uint32) *flat.PlayerConfigurationT {
 		},
 		Name:       "Human",
 		Team:       team,
-		Location:   "",
+		RootDir:    "",
 		RunCommand: "",
 		Loadout:    &flat.PlayerLoadoutT{},
 		SpawnId:    0,
@@ -93,12 +93,12 @@ type BotInfo struct {
 	TomlPath string    `json:"tomlPath"`
 }
 
-func (self BotInfo) ToPlayerConfig(team uint32) *flat.PlayerConfigurationT {
+func (botInfo BotInfo) ToPlayerConfig(team uint32) *flat.PlayerConfigurationT {
 	var runCommand string
 	if runtime.GOOS == "windows" {
-		runCommand = self.Config.Settings.RunCommand
+		runCommand = botInfo.Config.Settings.RunCommand
 	} else if runtime.GOOS == "linux" {
-		runCommand = self.Config.Settings.RunCommandLinux
+		runCommand = botInfo.Config.Settings.RunCommandLinux
 	}
 
 	return &flat.PlayerConfigurationT{
@@ -106,14 +106,15 @@ func (self BotInfo) ToPlayerConfig(team uint32) *flat.PlayerConfigurationT {
 			Type:  flat.PlayerClassRLBot,
 			Value: &flat.RLBotT{},
 		},
-		Name:       self.Config.Settings.Name,
+		Name:       botInfo.Config.Settings.Name,
+		AgentId:    botInfo.Config.Settings.AgentId,
 		Team:       team,
-		Location:   self.Config.Settings.Location,
+		RootDir:    botInfo.Config.Settings.RootDir,
 		RunCommand: runCommand,
 		// TODO: read player loadout file from LooksConfig
 		Loadout:  &flat.PlayerLoadoutT{},
 		SpawnId:  0, // let core do this
-		Hivemind: self.Config.Settings.Hivemind,
+		Hivemind: botInfo.Config.Settings.Hivemind,
 	}
 }
 
@@ -125,10 +126,12 @@ type BotConfig struct {
 type BotSettings struct {
 	// In-game name of the bot
 	Name string `toml:"name" json:"name"`
+	// A unique string identifying this type of bot, typically on the form "<developer>/<botname>"
+	AgentId string `toml:"agent_id" json:"agentId"`
 	// Path to looks.toml, describing the bots "loadout"
 	LooksConfig string `toml:"looks_config" json:"looksConfig"`
 	// Optional working dir of the bot
-	Location string `toml:"location" json:"location"`
+	RootDir string `toml:"root_dir" json:"rootDir"`
 	// Path to the logo of the bot, if ignored, RLBot will look for logo.png
 	LogoFile string `toml:"logo_file" json:"logoFile"`
 	// The command RLBot will call to start your bot on Windows
@@ -145,7 +148,7 @@ type BotDetails struct {
 	Description string `toml:"description" json:"description"`
 	// A fun fact about the bot
 	FunFact string `toml:"fun_fact" json:"funFact"`
-	// Link to the source code of the bot (if its avaliable)
+	// Link to the source code of the bot (if its available)
 	SourceLink string `toml:"source_link" json:"sourceLink"` // TODO: Rename this field to repo?
 	// Name(s) of the bot developer(s)
 	Developer string `toml:"developer" json:"developer"`
@@ -159,7 +162,7 @@ type BotDetails struct {
 }
 
 func (a *App) GetBots(paths []string) []BotInfo {
-	// TODO: Search recusrive in paths
+	// TODO: Search recursive in paths
 	potentialConfigs := []string{}
 
 	for _, path := range paths {
@@ -183,11 +186,11 @@ func (a *App) GetBots(paths []string) []BotInfo {
 		toml.Decode(string(data), &conf)
 
 		// make location path relative to parent of bot.toml
-		conf.Settings.Location = filepath.Join(filepath.Dir(potentialConfigPath), conf.Settings.Location)
+		conf.Settings.RootDir = filepath.Join(filepath.Dir(potentialConfigPath), conf.Settings.RootDir)
 
 		// Read logo file and convert it to data url so the frontend can use it
 		if conf.Settings.LogoFile != "" {
-			conf.Settings.LogoFile = filepath.Join(conf.Settings.Location, conf.Settings.LogoFile)
+			conf.Settings.LogoFile = filepath.Join(conf.Settings.RootDir, conf.Settings.LogoFile)
 			logo_data, err := os.ReadFile(conf.Settings.LogoFile)
 			if err != nil {
 				println("WARN: failed to read logo file at " + conf.Settings.LogoFile)

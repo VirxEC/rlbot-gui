@@ -5,4 +5,4 @@ dev:
     wails3 dev
 
 lint:
-    cd frontend && pnpx @biomejs/biome lint
+    cd frontend && pnpx oxlint

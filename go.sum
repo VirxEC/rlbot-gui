@@ -114,8 +114,8 @@ github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81P
 github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcUk=
 github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
-github.com/swz-git/go-interface v0.0.0-20240924220437-6a9b57ac17cf h1:oYqrFBPBV2E01642HLbsCWqek4qNo9NHhwvOR5Bmo4I=
-github.com/swz-git/go-interface v0.0.0-20240924220437-6a9b57ac17cf/go.mod h1:NCsY3YcB5NTHLQaHW40AkKwubi7CSMbfR7EIA44Gd3I=
+github.com/swz-git/go-interface v0.0.0-20241111211740-6b2092c8da82 h1:G7qiCQIta6P/lCv61vDsvmn2Pp7bXRHTG0jHaoSlwpQ=
+github.com/swz-git/go-interface v0.0.0-20241111211740-6b2092c8da82/go.mod h1:NCsY3YcB5NTHLQaHW40AkKwubi7CSMbfR7EIA44Gd3I=
 github.com/wailsapp/go-webview2 v1.0.15 h1:IeQFoWmsHp32y64I41J+Zod3SopjHs918KSO4jUqEnY=
 github.com/wailsapp/go-webview2 v1.0.15/go.mod h1:Uk2BePfCRzttBBjFrBmqKGJd41P6QIHeV9kTgIeOZNo=
 github.com/wailsapp/mimetype v1.4.1 h1:pQN9ycO7uo4vsUUuPeHEYoUkLVkaRntMnHJxVwYhwHs=

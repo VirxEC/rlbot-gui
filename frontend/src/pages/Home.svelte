@@ -3,15 +3,11 @@
     import {
         App,
         BotInfo,
-        HumanInfo,
-        PsyonixBotInfo,
         type StartMatchOptions,
     } from "../../bindings/gui/index.js";
     /** @import * from '../../bindings/gui' */
     import toast from "svelte-french-toast";
-    // @ts-ignore
-    import arenaImages from "../arena-images.ts";
-    import rlbotMono from "../assets/rlbot_mono.png";
+    import arenaImages from "../arena-images";
     import closeIcon from "../assets/close.svg";
     import reloadIcon from "../assets/reload.svg";
     import BotList from "../components/BotList.svelte";

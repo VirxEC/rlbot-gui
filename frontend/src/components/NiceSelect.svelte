@@ -1,15 +1,13 @@
-<script>
-    export let value;
+<script lang="ts">
+    export let value: any;
     export let options = {};
     $: options_entries = Object.entries(options);
     export let placeholder = "Select option";
 </script>
 
 <label class="select" for="slct">
-    <select id="slct" bind:value required="required">
-        <option value="" disabled="disabled" selected="selected"
-            >{placeholder}</option
-        >
+    <select id="slct" bind:value required>
+        <option value="" disabled selected>{placeholder}</option>
         {#each options_entries as option}
             <option value={option[1]}>{option[0]}</option>
         {/each}
@@ -20,7 +18,7 @@
 </label>
 <!-- SVG Sprites-->
 <svg class="sprites">
-    <symbol id="select-arrow-down" viewbox="0 0 10 6">
+    <symbol id="select-arrow-down" viewBox="0 0 10 6">
         <polyline points="1 1 5 5 9 1"></polyline>
     </symbol>
 </svg>

@@ -7,7 +7,7 @@ toolchain go1.22.5
 require (
 	github.com/BurntSushi/toml v1.4.0
 	github.com/ncruces/zenity v0.10.13
-	github.com/swz-git/go-interface v0.0.0-20240924220437-6a9b57ac17cf
+	github.com/swz-git/go-interface v0.0.0-20241111211740-6b2092c8da82
 	github.com/wailsapp/mimetype v1.4.1
 	github.com/wailsapp/wails/v3 v3.0.0-alpha.7
 )

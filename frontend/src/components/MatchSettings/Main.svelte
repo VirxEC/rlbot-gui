@@ -1,7 +1,7 @@
 <script lang="ts">
     import Select from "../NiceSelect.svelte";
     import Modal from "../Modal.svelte";
-    import maps from "../../arena-names.js";
+    import { MAPS_STANDARD as maps } from "../../arena-names.js";
     import { mutators as mutatorOptions } from "./rlmutators";
     import type { ExtraOptions } from "../../../bindings/gui";
 

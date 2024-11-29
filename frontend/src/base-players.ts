@@ -1,7 +1,6 @@
 import type { DraggablePlayer } from ".";
 import { HumanInfo, PsyonixBotInfo } from "../bindings/gui";
 import controller from "./assets/controller.svg";
-import rlbot_mono from "./assets/rlbot_mono.png";
 
 export const BASE_PLAYERS: DraggablePlayer[] = [
   {
