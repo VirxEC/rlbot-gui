@@ -1,5 +1,6 @@
 import "./global.css";
 import App from "./App.svelte";
+import { mount } from "svelte";
 import {
   BotInfo,
   type PlayerJs,
@@ -7,7 +8,7 @@ import {
   HumanInfo,
 } from "../bindings/gui";
 
-const app = new App({
+const app: any = mount(App, {
   target: document.body,
   // props: {
   //   name: "world",

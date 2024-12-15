@@ -1,8 +1,6 @@
 <script lang="ts">
     import close from "../assets/close.svg";
-
-    export let title = "Modal";
-    export let visible = true;
+    let { title = "Modal", visible = $bindable(true), children } = $props();
 </script>
 
 <div class={visible ? "" : "hidden"}>
@@ -11,13 +9,13 @@
             <header>
                 <h2>{title}</h2>
                 <button
-                    on:click={() => {
+                    onclick={() => {
                         visible = false;
                     }}><img src={close} alt="close" /></button
                 >
             </header>
             <div class="modalBody">
-                <slot />
+                {@render children?.()}
             </div>
         </div>
     </div>

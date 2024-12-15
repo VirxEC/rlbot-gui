@@ -1,14 +1,20 @@
 <script lang="ts">
     import Select from "../NiceSelect.svelte";
     import Modal from "../Modal.svelte";
-    import { MAPS_STANDARD as maps } from "../../arena-names.js";
+    import { MAPS_STANDARD } from "../../arena-names.js";
     import { mutators as mutatorOptions } from "./rlmutators";
     import type { ExtraOptions } from "../../../bindings/gui";
 
-    export let map = localStorage.getItem("MS_MAP") || maps.DFHStadium;
-    $: {
-        localStorage.setItem("MS_MAP", map);
-    }
+    let {
+        map = $bindable(),
+        mode = $bindable(),
+        extraOptions = $bindable(),
+        mutators = $bindable(),
+        onStart = () => {},
+        onStop = () => {},
+    } = $props();
+    let showExtraOptions = $state(false);
+    let showMutators = $state(false);
 
     const modes = [
         "Soccer",
@@ -19,10 +25,6 @@
         "Heatseeker",
         "Gridiron",
     ];
-    export let mode = localStorage.getItem("MS_MODE") || "Soccer";
-    $: {
-        localStorage.setItem("MS_MODE", mode);
-    }
 
     const existingMatchBehaviors: { [n: string]: number } = {
         "Restart if different": 0,
@@ -30,56 +32,51 @@
         "Continue and spawn": 2,
     };
 
-    let showExtraOptions = false;
-    export let extraOptions: ExtraOptions = JSON.parse(
-        localStorage.getItem("MS_EXTRAOPTIONS") || "{}",
-    );
-    $: {
-        localStorage.setItem("MS_EXTRAOPTIONS", JSON.stringify(extraOptions));
-    }
-
-    let showMutators = false;
-    export let mutators = JSON.parse(
-        localStorage.getItem("MS_MUTATORS") || "{}",
-    );
-    $: {
-        localStorage.setItem("MS_MUTATORS", JSON.stringify(mutators));
-    }
-
     function cleanCamelCase(toClean: string) {
         return toClean
             .replace(/[A-Z]/g, (letter) => ` ${letter.toLowerCase()}`)
             .replace(/^[a-z]/, (letter) => letter.toUpperCase());
     }
-
-    export let onStart: () => any = () => {};
-    export let onStop: () => any = () => {};
 </script>
 
 <div class="matchSettings">
     <h1>Match Settings</h1>
     <div class="content">
         <div class="settings">
-            <Select options={maps} bind:value={map} placeholder="Select map" />
+            <Select
+                options={MAPS_STANDARD}
+                bind:value={map}
+                placeholder="Select map"
+            />
             <Select
                 options={Object.fromEntries(modes.map((x) => [x, x]))}
                 bind:value={mode}
                 placeholder="Select mode"
             />
             <button
-                on:click={() => {
+                onclick={() => {
                     showMutators = true;
                 }}>Mutators</button
             >
             <button
-                on:click={() => {
+                onclick={() => {
                     showExtraOptions = true;
                 }}>Extra</button
             >
         </div>
         <div class="controls">
-            <button class="start" on:click={onStart()}>Start</button>
-            <button class="stop" on:click={onStop()}>Stop</button>
+            <button
+                class="start"
+                onclick={() => {
+                    onStart;
+                }}>Start</button
+            >
+            <button
+                class="stop"
+                onclick={() => {
+                    onStop;
+                }}>Stop</button
+            >
         </div>
     </div>
 </div>
@@ -109,7 +106,7 @@
         <p>Settings are saved automatically</p>
         <button
             class="mutatorResetButton"
-            on:click={() => {
+            onclick={() => {
                 for (let key of Object.keys(mutators)) {
                     mutators[key] = 0;
                 }

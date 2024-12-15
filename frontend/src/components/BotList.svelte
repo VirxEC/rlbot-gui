@@ -7,8 +7,10 @@
     } from "svelte-dnd-action";
     import defaultIcon from "../assets/rlbot_mono.png";
     import type { DraggablePlayer } from "../index";
-    export let items: DraggablePlayer[] = [];
+    let { items = [] }: { items: DraggablePlayer[] } = $props();
     const flipDurationMs = 100;
+
+    // The following stuff copies the bots from the list instead of moving them
     let shouldIgnoreDndEvents = false;
     function handleDndConsider(e: any) {
         const { trigger, id } = e.detail.info;
@@ -49,8 +51,8 @@
         dropTargetStyle: {},
         dropTargetClasses: ["dropTarget"],
     }}
-    on:consider={handleDndConsider}
-    on:finalize={handleDndFinalize}
+    onconsider={handleDndConsider}
+    onfinalize={handleDndFinalize}
 >
     {#each items as bot (bot.id)}
         <div class="bot" animate:flip={{ duration: flipDurationMs }}>

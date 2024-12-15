@@ -3,12 +3,12 @@
     import { flip } from "svelte/animate";
     import closeIcon from "../../assets/close.svg";
     import defaultIcon from "../../assets/rlbot_mono.png";
-    import type DraggablePlayer from "../..";
+    import type { DraggablePlayer } from "../..";
     const flipDurationMs = 100;
     function handleSort(e: any) {
         items = e.detail.items;
     }
-    export let items: (typeof DraggablePlayer)[] = [];
+    let { items = $bindable() }: { items: DraggablePlayer[] } = $props();
     function remove(id: number): any {
         items = items.filter((x) => x.id !== id);
     }
@@ -31,15 +31,15 @@
             dropTargetStyle: {},
             dropTargetClasses: ["dropTarget"],
         }}
-        on:consider={handleSort}
-        on:finalize={handleSort}
+        onconsider={handleSort}
+        onfinalize={handleSort}
     >
         {#each items as bot (bot.id)}
             <div class="bot" animate:flip={{ duration: flipDurationMs }}>
                 <img src={bot?.icon || defaultIcon} alt="icon" />
                 <p>{bot?.displayName}</p>
                 <div style="flex: 1;"></div>
-                <button class="close" on:click={remove(bot.id)}>
+                <button class="close" onclick={remove.bind(null, bot.id)}>
                     <img src={closeIcon} alt="X" />
                 </button>
             </div>

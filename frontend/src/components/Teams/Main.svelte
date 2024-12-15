@@ -1,8 +1,10 @@
 <script lang="ts">
     import TeamBotList from "./TeamBotList.svelte";
 
-    export let bluePlayers: any[] = [];
-    export let orangePlayers: any[] = [];
+    let {
+        bluePlayers = $bindable(),
+        orangePlayers = $bindable(),
+    }: { bluePlayers: any[]; orangePlayers: any[] } = $props();
 </script>
 
 <div class="teams">

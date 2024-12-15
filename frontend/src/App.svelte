@@ -1,9 +1,10 @@
 <script lang="ts">
     import Home from "./pages/Home.svelte";
+    import RocketHost from "./pages/RocketHost.svelte";
     import logo from "./assets/rlbot_logo.svg";
-    import { Toaster } from "svelte-french-toast";
+    import { Toaster } from "svelte-5-french-toast";
 
-    const activePage = "home";
+    let activePage = $state("home");
 </script>
 
 <Toaster />
@@ -13,24 +14,33 @@
         <div>
             <img class="logo" src={logo} alt="logo" />
             <h1>RLBot</h1>
+            {#if activePage == "rhost"}
+                <h3>&nbsp; / Rocket Host</h3>
+            {/if}
         </div>
         <div class="navbuttons">
-            <button on:click={alert.bind(null, "TODO: not implemented yet")}
+            <button onclick={alert.bind(null, "TODO: not implemented yet")}
                 >Events</button
             >
-            <button on:click={alert.bind(null, "TODO: not implemented yet")}
-                >State Setting Sandbox</button
-            >
-            <button on:click={alert.bind(null, "TODO: not implemented yet")}
+            <button onclick={alert.bind(null, "TODO: not implemented yet")}
                 >Story Mode</button
+            >
+            <button
+                onclick={() => {
+                    activePage = "rhost";
+                }}>Rocket Host</button
             >
             <div class="spacer"></div>
             <div class="dropdown">
                 <button>Menu</button>
                 <div class="dropmenu right">
                     <button
-                        on:click={alert.bind(null, "TODO: not implemented yet")}
+                        onclick={alert.bind(null, "TODO: not implemented yet")}
                         >Repair botpack</button
+                    >
+                    <button
+                        onclick={alert.bind(null, "TODO: not implemented yet")}
+                        >State Setting Sandbox</button
                     >
                 </div>
             </div>
@@ -39,6 +49,13 @@
 
     {#if activePage == "home"}
         <Home />
+    {/if}
+    {#if activePage == "rhost"}
+        <RocketHost
+            onBack={() => {
+                activePage = "home";
+            }}
+        />
     {/if}
 </main>
 

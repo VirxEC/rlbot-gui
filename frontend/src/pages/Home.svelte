@@ -6,10 +6,11 @@
         type StartMatchOptions,
     } from "../../bindings/gui/index.js";
     /** @import * from '../../bindings/gui' */
-    import toast from "svelte-french-toast";
+    import toast from "svelte-5-french-toast";
     import arenaImages from "../arena-images";
     import closeIcon from "../assets/close.svg";
     import reloadIcon from "../assets/reload.svg";
+    import { MAPS_STANDARD } from "../arena-names.js";
     import BotList from "../components/BotList.svelte";
     // @ts-ignore
     import Teams from "../components/Teams/Main.svelte";
@@ -24,13 +25,13 @@
     //     x.includes("Mannfield_Stormy"),
     // );
 
-    let paths = JSON.parse(
-        window.localStorage.getItem("BOT_SEARCH_PATHS") || "[]",
+    let paths = $state(
+        JSON.parse(window.localStorage.getItem("BOT_SEARCH_PATHS") || "[]"),
     );
 
-    let players: DraggablePlayer[] = [...BASE_PLAYERS];
+    let players: DraggablePlayer[] = $state([...BASE_PLAYERS]);
 
-    let loadingPlayers = false;
+    let loadingPlayers = $state(false);
     let latestBotUpdateTime = null;
     async function updateBots() {
         loadingPlayers = true;
@@ -54,20 +55,37 @@
         loadingPlayers = false;
         console.log("Loaded bots:", result);
     }
-    // this closure will get called if paths updates
-    $: {
-        paths;
+
+    $effect(() => {
         window.localStorage.setItem("BOT_SEARCH_PATHS", JSON.stringify(paths));
         updateBots();
-    }
+    });
 
-    let bluePlayers: DraggablePlayer[] = [];
-    let orangePlayers: DraggablePlayer[] = [];
+    let bluePlayers: DraggablePlayer[] = $state([]);
+    let orangePlayers: DraggablePlayer[] = $state([]);
 
-    let map: any;
-    let mode: any;
-    let mutatorSettings: any;
-    let extraOptions: any;
+    let map = $state(
+        localStorage.getItem("MS_MAP") || MAPS_STANDARD.DFHStadium,
+    );
+    $effect(() => {
+        localStorage.setItem("MS_MAP", map);
+    });
+    let mode = $state(localStorage.getItem("MS_MODE") || "Soccer");
+    $effect(() => {
+        localStorage.setItem("MS_MODE", mode);
+    });
+    let extraOptions = $state(
+        JSON.parse(localStorage.getItem("MS_EXTRAOPTIONS") || "{}"),
+    );
+    $effect(() => {
+        localStorage.setItem("MS_EXTRAOPTIONS", JSON.stringify(extraOptions));
+    });
+    let mutatorSettings = $state(
+        JSON.parse(localStorage.getItem("MS_MUTATORS") || "{}"),
+    );
+    $effect(() => {
+        localStorage.setItem("MS_MUTATORS", JSON.stringify(mutatorSettings));
+    });
 
     async function onMatchStart() {
         let options: StartMatchOptions = {
@@ -125,7 +143,7 @@
 </script>
 
 <div class="page" style={`background-image: url("${backgroundImage}")`}>
-    <div class="avaliableBots box">
+    <div class="availableBots box">
         <header>
             <h1>Bots</h1>
             <div class="dropdown">
@@ -136,7 +154,7 @@
                             <pre>{path}</pre>
                             <button
                                 class="close"
-                                on:click={() => {
+                                onclick={() => {
                                     paths.splice(i, 1);
                                     // makes reactivity work
                                     paths = paths;
@@ -147,7 +165,7 @@
                         </div>
                     {/each}
                     <button
-                        on:click={async () => {
+                        onclick={async () => {
                             let result = await App.PickFolder();
                             console.log("PickFolder returned:", result);
                             if (result != "") {
@@ -160,7 +178,7 @@
             {#if loadingPlayers}
                 <h3>Searching...</h3>
             {:else}
-                <button class="reloadButton" on:click={updateBots}
+                <button class="reloadButton" onclick={updateBots}
                     ><img src={reloadIcon} alt="reload" /></button
                 >
             {/if}
@@ -208,10 +226,10 @@
     .page > div:not(:first-child) {
         margin-top: 1rem;
     }
-    .avaliableBots {
+    .availableBots {
         padding-bottom: 0.6rem;
     }
-    .avaliableBots header {
+    .availableBots header {
         display: flex;
         align-items: center;
         gap: 1rem;
