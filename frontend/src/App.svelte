@@ -12,8 +12,15 @@
 <main>
     <div class="navbar">
         <div>
-            <img class="logo" src={logo} alt="logo" />
-            <h1>RLBot</h1>
+            <a
+                onclick={() => {
+                    activePage = "home";
+                }}
+            >
+                <img class="logo" src={logo} alt="logo" />
+                <h1>RLBot</h1>
+            </a>
+
             {#if activePage == "rhost"}
                 <h3>&nbsp; / Rocket Host</h3>
             {/if}
@@ -47,21 +54,28 @@
         </div>
     </div>
 
-    {#if activePage == "home"}
+    <div
+        class={activePage == "home" ? "pageContainer" : "pageContainer hidden"}
+    >
         <Home />
-    {/if}
-    {#if activePage == "rhost"}
+    </div>
+
+    <div
+        class={activePage == "rhost" ? "pageContainer" : "pageContainer hidden"}
+    >
         <RocketHost
             onBack={() => {
                 activePage = "home";
             }}
         />
-    {/if}
+    </div>
 </main>
 
 <style>
     main {
         display: flex;
+        height: 100%;
+        width: 100%;
         flex-direction: column;
     }
     .navbar {
@@ -75,6 +89,10 @@
     .navbar > div {
         display: flex;
         align-items: center;
+    }
+    .navbar * {
+        user-select: none;
+        -webkit-user-select: none;
     }
     h1 {
         margin: 0px;
@@ -93,5 +111,26 @@
     }
     .navbar .dropmenu > * {
         margin: 0.2rem;
+    }
+    a {
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .pageContainer {
+        display: flex;
+        justify-content: center;
+        height: 100%;
+        width: 100%;
+        background: inherit;
+        visibility: visible;
+        overflow: scroll;
+    }
+    .hidden {
+        opacity: 0;
+        z-index: -99999;
+        visibility: hidden;
+        display: none;
     }
 </style>

@@ -65,18 +65,8 @@
             >
         </div>
         <div class="controls">
-            <button
-                class="start"
-                onclick={() => {
-                    onStart;
-                }}>Start</button
-            >
-            <button
-                class="stop"
-                onclick={() => {
-                    onStop;
-                }}>Stop</button
-            >
+            <button class="start" onclick={onStart}>Start</button>
+            <button class="stop" onclick={onStop}>Stop</button>
         </div>
     </div>
 </div>
