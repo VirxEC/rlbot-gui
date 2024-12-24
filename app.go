@@ -74,6 +74,8 @@ type StartMatchOptions struct {
 	OrangePlayers   []PlayerJs            `json:"orangePlayers"`
 	MutatorSettings flat.MutatorSettingsT `json:"mutatorSettings"`
 	ExtraOptions    ExtraOptions          `json:"extraOptions"`
+	Launcher        string                `json:"launcher"`
+	GamePath        string                `json:"gamePath"`
 }
 
 func (a *App) StartMatch(options StartMatchOptions) Result {
@@ -105,6 +107,19 @@ func (a *App) StartMatch(options StartMatchOptions) Result {
 		gameMode = flat.GameModeSoccer
 	}
 
+	var launcher flat.Launcher
+	switch options.Launcher {
+	case "steam":
+		launcher = flat.LauncherSteam
+	case "epic":
+		launcher = flat.LauncherEpic
+	case "custom":
+		launcher = flat.LauncherCustom
+	default:
+		println("No launcher chosen, defaulting to steam")
+		launcher = flat.LauncherSteam
+	}
+
 	var playerConfigs []*flat.PlayerConfigurationT
 
 	for _, playerInfo := range options.BluePlayers {
@@ -128,6 +143,8 @@ func (a *App) StartMatch(options StartMatchOptions) Result {
 		InstantStart:          options.ExtraOptions.InstantStart,
 		SkipReplays:           options.ExtraOptions.SkipReplays,
 		AutoSaveReplay:        options.ExtraOptions.AutoSaveReplay,
+		Launcher:              launcher,
+		GamePath:              options.GamePath,
 		ExistingMatchBehavior: flat.ExistingMatchBehavior(options.ExtraOptions.ExistingMatchBehavior),
 	})
 

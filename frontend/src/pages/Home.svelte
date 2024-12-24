@@ -87,6 +87,9 @@
         localStorage.setItem("MS_MUTATORS", JSON.stringify(mutatorSettings));
     });
 
+    let launcher = $state("steam");
+    let gamePath = $state("");
+
     async function onMatchStart() {
         let options: StartMatchOptions = {
             map,
@@ -99,6 +102,8 @@
                 // @ts-ignore
                 return draggablePlayerToPlayerJs(x);
             }),
+            launcher,
+            gamePath,
             mutatorSettings,
             extraOptions,
         };
@@ -198,6 +203,8 @@
             bind:mode
             bind:mutators={mutatorSettings}
             bind:extraOptions
+            bind:launcher
+            bind:gamePath
         />
     </div>
 </div>

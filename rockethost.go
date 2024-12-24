@@ -112,6 +112,8 @@ type RHostMatchSettings struct {
 	Map        string   `json:"map"`
 	BlueBots   []string `json:"blueBots"`
 	OrangeBots []string `json:"orangeBots"`
+	Launcher   string   `json:"launcher"`
+	GamePath   string   `json:"gamePath"`
 }
 
 func (a *App) StartRHostMatch(settings RHostMatchSettings) (string, error) {
@@ -145,6 +147,19 @@ func (a *App) StartRHostMatch(settings RHostMatchSettings) (string, error) {
 		return "", errors.New("Couldn't connect to RLBotServer")
 	}
 
+	var launcher flat.Launcher
+	switch settings.Launcher {
+	case "steam":
+		launcher = flat.LauncherSteam
+	case "epic":
+		launcher = flat.LauncherEpic
+	case "custom":
+		launcher = flat.LauncherCustom
+	default:
+		println("No launcher chosen, defaulting to steam")
+		launcher = flat.LauncherSteam
+	}
+
 	err = conn.SendPacket(&flat.MatchSettingsT{
 		PlayerConfigurations: []*flat.PlayerConfigurationT{},
 		ScriptConfigurations: []*flat.ScriptConfigurationT{
@@ -162,6 +177,8 @@ func (a *App) StartRHostMatch(settings RHostMatchSettings) (string, error) {
 		GameMapUpk:            settings.Map,
 		EnableStateSetting:    true,
 		EnableRendering:       true,
+		Launcher:              launcher,
+		GamePath:              settings.GamePath,
 	})
 	if err != nil {
 		return "", errors.New("Couldn't send matchsettings packet")

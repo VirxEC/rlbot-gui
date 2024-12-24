@@ -4,12 +4,15 @@
     import { MAPS_STANDARD } from "../../arena-names.js";
     import { mutators as mutatorOptions } from "./rlmutators";
     import type { ExtraOptions } from "../../../bindings/gui";
+    import LauncherSelector from "../LauncherSelector.svelte";
 
     let {
         map = $bindable(),
         mode = $bindable(),
         extraOptions = $bindable(),
         mutators = $bindable(),
+        launcher = $bindable(),
+        gamePath = $bindable(),
         onStart = () => {},
         onStop = () => {},
     } = $props();
@@ -53,6 +56,11 @@
                 bind:value={mode}
                 placeholder="Select mode"
             />
+        </div>
+        <div class="controls">
+            <button class="start" onclick={()=>{onStart()}}>Start</button>
+            <button class="stop" onclick={()=>{onStop()}}>Stop</button>
+            <div></div>
             <button
                 onclick={() => {
                     showMutators = true;
@@ -63,10 +71,7 @@
                     showExtraOptions = true;
                 }}>Extra</button
             >
-        </div>
-        <div class="controls">
-            <button class="start" onclick={onStart}>Start</button>
-            <button class="stop" onclick={onStop}>Stop</button>
+            <LauncherSelector bind:launcher bind:gamePath />
         </div>
     </div>
 </div>
@@ -147,7 +152,7 @@
         <label for="instantStart"> Instant Start </label>
         <br />
         <select
-            name="cock"
+            name="emb"
             id="emb"
             bind:value={extraOptions.existingMatchBehavior}
         >

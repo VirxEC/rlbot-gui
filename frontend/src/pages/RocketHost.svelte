@@ -4,6 +4,7 @@
     import { MAPS_STANDARD } from "../arena-names";
     import closeIcon from "../assets/close.svg"
     import Plus from "../assets/plus.svg.svelte";
+    import LauncherSelector from "../components/LauncherSelector.svelte";
     let { onBack } = $props();
 
     let waiting = $state(false);
@@ -65,6 +66,9 @@
 
     let blueBots: string[] = $state([]);
     let orangeBots: string[] = $state([]);
+
+    let launcher = $state("steam");
+    let gamePath = $state("");
 </script>
 
 <div class="page">
@@ -178,6 +182,10 @@
                     {/each}
                 </select>
             </div>
+            <div>
+                <label for="mapselect">Launcher</label>
+                <LauncherSelector bind:launcher bind:gamePath />
+            </div>
         </div>
 
         <div class="buttons">
@@ -190,7 +198,9 @@
                   server: serverAddr,
                   map,
                   blueBots,
-                  orangeBots
+                  orangeBots,
+                  launcher,
+                  gamePath
                 }).then((addr)=>{
                     waiting = false;
                     toast.success(
