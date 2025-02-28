@@ -12,27 +12,27 @@ importers:
         specifier: 3.0.0-alpha.27
         version: 3.0.0-alpha.27
       svelte:
-        specifier: ^5
-        version: 5.11.2
+        specifier: ^5.20.5
+        version: 5.20.5
       svelte-5-french-toast:
         specifier: 2.0.1
-        version: 2.0.1(svelte@5.11.2)
+        version: 2.0.1(svelte@5.20.5)
       svelte-dnd-action:
-        specifier: ^0.9.52
-        version: 0.9.52(svelte@5.11.2)
+        specifier: ^0.9.57
+        version: 0.9.57(svelte@5.20.5)
     devDependencies:
       '@rsbuild/core':
         specifier: 1.0.5
         version: 1.0.5
       '@rsbuild/plugin-svelte':
         specifier: 1.0.5
-        version: 1.0.5(@rsbuild/core@1.0.5)(svelte@5.11.2)(typescript@5.7.2)
+        version: 1.0.5(@rsbuild/core@1.0.5)(svelte@5.20.5)(typescript@5.7.3)
       oxlint:
         specifier: ^0.13.2
         version: 0.13.2
       typescript:
-        specifier: ^5.5.2
-        version: 5.7.2
+        specifier: ^5.7.3
+        version: 5.7.3
 
 packages:
 
@@ -211,8 +211,12 @@ packages:
   big.js@5.2.2:
     resolution: {integrity: sha512-vyL2OymJxmarO8gxMr0mhChsO9QGwhynfuu4+MHTAW6czfq9humCB7rKpUjDd9YUiDPU4mzpyupFSvOClAwbmQ==}
 
-  caniuse-lite@1.0.30001688:
-    resolution: {integrity: sha512-Nmqpru91cuABu/DTCXbM2NSRHzM2uVHfPnhJ/1zEAJx/ILBRVmz3pzH4N7DZqbdG0gWClsCC05Oj0mJ/1AWMbA==}
+  caniuse-lite@1.0.30001701:
+    resolution: {integrity: sha512-faRs/AW3jA9nTwmJBSO1PQ6L/EOgsB5HMQQq4iCu5zhPgVVgO/pZRHlmatwijZKetFw8/Pr4q6dEN8sJuq8qTw==}
+
+  clsx@2.1.1:
+    resolution: {integrity: sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==}
+    engines: {node: '>=6'}
 
   core-js@3.38.1:
     resolution: {integrity: sha512-OP35aUorbU3Zvlx7pjsFdu1rGNnD4pgw/CWoYzRY3t2EzoVT7shKHY1dlAy3f41cGIO7ZDPQimhGFTlEYkG/Hw==}
@@ -221,11 +225,11 @@ packages:
     resolution: {integrity: sha512-/kyM18EfinwXZbno9FyUGeFh87KC8HRQBQGildHZbEuRyWFOmv1U10o9BBp8XVZDVNNuQKyIGIu5ZYAAXJ0V2Q==}
     engines: {node: '>= 4'}
 
-  esm-env@1.2.1:
-    resolution: {integrity: sha512-U9JedYYjCnadUlXk7e1Kr+aENQhtUaoaV9+gZm1T8LC/YBAPJx3NSPIAurFOC0U5vrdSevnUJS2/wUVxGwPhng==}
+  esm-env@1.2.2:
+    resolution: {integrity: sha512-Epxrv+Nr/CaL4ZcFGPJIYLWFom+YeV1DqMLHJoEd9SYRxNbaFruBwfEX/kkHUJf55j2+TUbmDcmuilbP1TmXHA==}
 
-  esrap@1.2.3:
-    resolution: {integrity: sha512-ZlQmCCK+n7SGoqo7DnfKaP1sJZa49P01/dXzmjCASSo04p72w8EksT2NMK8CEX8DhKsfJXANioIw8VyHNsBfvQ==}
+  esrap@1.4.5:
+    resolution: {integrity: sha512-CjNMjkBWWZeHn+VX+gS8YvFwJ5+NDhg8aWZBSFJPR8qQduDNjbJodA2WcwCm7uQa5Rjqj+nZvVmceg1RbHFB9g==}
 
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
@@ -247,11 +251,11 @@ packages:
   locate-character@3.0.0:
     resolution: {integrity: sha512-SW13ws7BjaeJ6p7Q6CO2nchbYEc3X3J6WrmTTDto7yMPqVSZTUyY5Tjbid+Ab8gLnATtygYtiDIJGQRRn2ZOiA==}
 
-  magic-string@0.30.15:
-    resolution: {integrity: sha512-zXeaYRgZ6ldS1RJJUrMrYgNJ4fdwnyI6tVqoiIhyCyv5IVTK9BU8Ic2l253GGETQHxI4HNUwhJ3fjDhKqEoaAw==}
+  magic-string@0.30.17:
+    resolution: {integrity: sha512-sNPKHvyjVf7gyjwS4xGTaW/mCnF8wnjtifKBEhxfZ7E/S8tQ0rssrwGNn6q8JH/ohItJfSQp9mBtQYuTlH5QnA==}
 
-  nanoid@5.0.9:
-    resolution: {integrity: sha512-Aooyr6MXU6HpvvWXKoVoXwKMs/KyVakWwg7xQfv5/S/RIgJMy0Ifa45H9qqYy7pTCszrHzP21Uk4PZq2HpEM8Q==}
+  nanoid@5.1.2:
+    resolution: {integrity: sha512-b+CiXQCNMUGe0Ri64S9SXFcP9hogjAJ2Rd6GdVxhPLRm7mhGaM7VgOvCAJ1ZshfHbqVDI3uqTI5C8/GaKuLI7g==}
     engines: {node: ^18 || >=20}
     hasBin: true
 
@@ -268,8 +272,8 @@ packages:
   svelte-dev-helper@1.1.9:
     resolution: {integrity: sha512-oU+Xv7Dl4kRU2kdFjsoPLfJfnt5hUhsFUZtuzI3Ku/f2iAFZqBoEuXOqK3N9ngD4dxQOmN4OKWPHVi3NeAeAfQ==}
 
-  svelte-dnd-action@0.9.52:
-    resolution: {integrity: sha512-f841HB5PCcvp21jsMkxSXCXcsJcGmIPMguN6iI1gXqP9Owcb47+ZUIE5ETUzNJntE9h7dm1wFj2Bm51hRtQ7Lw==}
+  svelte-dnd-action@0.9.57:
+    resolution: {integrity: sha512-H1QPlthwAH+xjaISKbp/dQJYeC3Jt1mlTNqJDko0f7XgEyi5ee3PMEuAfF1soJXA0Y5ceb+W8xJXiSZ+2CeMNA==}
     peerDependencies:
       svelte: '>=3.23.0 || ^5.0.0-next.0'
 
@@ -326,15 +330,15 @@ packages:
     peerDependencies:
       svelte: ^3.2.1 || ^4.0.0-next.1 || ^5.0.0-next.94
 
-  svelte@5.11.2:
-    resolution: {integrity: sha512-kGWswlBaohYxZHML9jp8ZYXkwjKd+WTpyAK1CCDmNzsefZHQjvsa7kbrKUckcFloNmdzwQwaZq+NyunuNOE6lw==}
+  svelte@5.20.5:
+    resolution: {integrity: sha512-dpu2lTPVsAAgZFKpF7A9741sBCdXGogfxFU4aQeVgun7GVNCSVheTzj0FsT7g9OsLhBaMX4lKLwVIvmzQGytmQ==}
     engines: {node: '>=18'}
 
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
-  typescript@5.7.2:
-    resolution: {integrity: sha512-i5t66RHxDvVN40HfDd1PsEThGNnlMCMT3jMUuoh9/0TaqWevNontacunWyN02LA9/fIbEWlcHZcgTKb9QoaLfg==}
+  typescript@5.7.3:
+    resolution: {integrity: sha512-84MVSjMEHP+FQRPy3pX9sTVV/INIex71s9TL2Gm5FG/WG1SqXeKyZ0k7/blY/4FdOzI12CBy1vGc4og/eus0fw==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -410,16 +414,16 @@ snapshots:
       '@rspack/core': 1.0.14(@swc/helpers@0.5.15)
       '@rspack/lite-tapable': 1.0.1
       '@swc/helpers': 0.5.15
-      caniuse-lite: 1.0.30001688
+      caniuse-lite: 1.0.30001701
       core-js: 3.38.1
     optionalDependencies:
       fsevents: 2.3.3
 
-  '@rsbuild/plugin-svelte@1.0.5(@rsbuild/core@1.0.5)(svelte@5.11.2)(typescript@5.7.2)':
+  '@rsbuild/plugin-svelte@1.0.5(@rsbuild/core@1.0.5)(svelte@5.20.5)(typescript@5.7.3)':
     dependencies:
       '@rsbuild/core': 1.0.5
-      svelte-loader: 3.2.4(svelte@5.11.2)
-      svelte-preprocess: 6.0.3(svelte@5.11.2)(typescript@5.7.2)
+      svelte-loader: 3.2.4(svelte@5.20.5)
+      svelte-preprocess: 6.0.3(svelte@5.20.5)(typescript@5.7.3)
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
@@ -477,7 +481,7 @@ snapshots:
       '@module-federation/runtime-tools': 0.5.1
       '@rspack/binding': 1.0.14
       '@rspack/lite-tapable': 1.0.1
-      caniuse-lite: 1.0.30001688
+      caniuse-lite: 1.0.30001701
     optionalDependencies:
       '@swc/helpers': 0.5.15
 
@@ -491,7 +495,7 @@ snapshots:
 
   '@wailsio/runtime@3.0.0-alpha.27':
     dependencies:
-      nanoid: 5.0.9
+      nanoid: 5.1.2
 
   acorn-typescript@1.4.13(acorn@8.14.0):
     dependencies:
@@ -505,18 +509,19 @@ snapshots:
 
   big.js@5.2.2: {}
 
-  caniuse-lite@1.0.30001688: {}
+  caniuse-lite@1.0.30001701: {}
+
+  clsx@2.1.1: {}
 
   core-js@3.38.1: {}
 
   emojis-list@3.0.0: {}
 
-  esm-env@1.2.1: {}
+  esm-env@1.2.2: {}
 
-  esrap@1.2.3:
+  esrap@1.4.5:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.0
-      '@types/estree': 1.0.6
 
   fsevents@2.3.3:
     optional: true
@@ -535,11 +540,11 @@ snapshots:
 
   locate-character@3.0.0: {}
 
-  magic-string@0.30.15:
+  magic-string@0.30.17:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.0
 
-  nanoid@5.0.9: {}
+  nanoid@5.1.2: {}
 
   oxlint@0.13.2:
     optionalDependencies:
@@ -552,39 +557,39 @@ snapshots:
       '@oxlint/win32-arm64': 0.13.2
       '@oxlint/win32-x64': 0.13.2
 
-  svelte-5-french-toast@2.0.1(svelte@5.11.2):
+  svelte-5-french-toast@2.0.1(svelte@5.20.5):
     dependencies:
-      svelte: 5.11.2
-      svelte-writable-derived: 3.1.1(svelte@5.11.2)
+      svelte: 5.20.5
+      svelte-writable-derived: 3.1.1(svelte@5.20.5)
 
   svelte-dev-helper@1.1.9: {}
 
-  svelte-dnd-action@0.9.52(svelte@5.11.2):
+  svelte-dnd-action@0.9.57(svelte@5.20.5):
     dependencies:
-      svelte: 5.11.2
+      svelte: 5.20.5
 
-  svelte-hmr@0.14.12(svelte@5.11.2):
+  svelte-hmr@0.14.12(svelte@5.20.5):
     dependencies:
-      svelte: 5.11.2
+      svelte: 5.20.5
 
-  svelte-loader@3.2.4(svelte@5.11.2):
+  svelte-loader@3.2.4(svelte@5.20.5):
     dependencies:
       loader-utils: 2.0.4
-      svelte: 5.11.2
+      svelte: 5.20.5
       svelte-dev-helper: 1.1.9
-      svelte-hmr: 0.14.12(svelte@5.11.2)
+      svelte-hmr: 0.14.12(svelte@5.20.5)
 
-  svelte-preprocess@6.0.3(svelte@5.11.2)(typescript@5.7.2):
+  svelte-preprocess@6.0.3(svelte@5.20.5)(typescript@5.7.3):
     dependencies:
-      svelte: 5.11.2
+      svelte: 5.20.5
     optionalDependencies:
-      typescript: 5.7.2
+      typescript: 5.7.3
 
-  svelte-writable-derived@3.1.1(svelte@5.11.2):
+  svelte-writable-derived@3.1.1(svelte@5.20.5):
     dependencies:
-      svelte: 5.11.2
+      svelte: 5.20.5
 
-  svelte@5.11.2:
+  svelte@5.20.5:
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@jridgewell/sourcemap-codec': 1.5.0
@@ -593,15 +598,16 @@ snapshots:
       acorn-typescript: 1.4.13(acorn@8.14.0)
       aria-query: 5.3.2
       axobject-query: 4.1.0
-      esm-env: 1.2.1
-      esrap: 1.2.3
+      clsx: 2.1.1
+      esm-env: 1.2.2
+      esrap: 1.4.5
       is-reference: 3.0.3
       locate-character: 3.0.0
-      magic-string: 0.30.15
+      magic-string: 0.30.17
       zimmerframe: 1.1.2
 
   tslib@2.8.1: {}
 
-  typescript@5.7.2: {}
+  typescript@5.7.3: {}
 
   zimmerframe@1.1.2: {}
