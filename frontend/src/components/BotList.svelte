@@ -12,7 +12,7 @@
 
     let selectedTag = $state("All");
     const extraModeTags = ["hoops", "dropshot", "snow-day", "spike-rush", "heatseaker"];
-    const tags = [
+    const categories = [
         ["All"],
         ["Standard", "Extra Modes", "Special bots/scripts"],
         ["Bots for 1v1", "Bots with teamplay", "Goalie bots"]
@@ -23,7 +23,7 @@
             case "Standard":
                 return items.filter((bot) => {
                     return !bot.tags.some((tag) =>
-                        [...extraModeTags, "memebot", "human", "psyonix"].includes(tag),
+                        [...extraModeTags, "memebot", "human"].includes(tag),
                     );
                 });
             case "Extra Modes":
@@ -84,7 +84,7 @@
 </script>
 
 <div class="tag-buttons">
-    {#each tags as tagGroup}
+    {#each categories as tagGroup}
         <div class="tag-group">
             {#each tagGroup as tag}
                 <button onclick={() => handleTagClick(tag)} class:selected={selectedTag === tag}>
