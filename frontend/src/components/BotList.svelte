@@ -18,37 +18,29 @@
         ["Bots for 1v1", "Bots with teamplay", "Goalie bots"]
     ];
 
-    function filterBots() {
-        switch (selectedTag) {
-            case "Standard":
-                return items.filter((bot) => {
+    let filteredItems = $derived(filterBots(selectedTag))
+
+    function filterBots(filterTag: string) {
+        return items.filter((bot) => {
+            switch (filterTag) {
+                case "Standard":
                     return !bot.tags.some((tag) =>
                         [...extraModeTags, "memebot", "human"].includes(tag),
                     );
-                });
-            case "Extra Modes":
-                return items.filter((bot) => {
+                case "Extra Modes":
                     return bot.tags.some((tag) => extraModeTags.includes(tag));
-                });
-            case "Special bots/scripts":
-                return items.filter((bot) => {
+                case "Special bots/scripts":
                     return bot.tags.some((tag) => tag === "memebot");
-                });
-            case "Bots for 1v1":
-                return items.filter((bot) => {
+                case "Bots for 1v1":
                     return bot.tags.some((tag) => tag === "1v1");
-                });
-            case "Bots with teamplay":
-                return items.filter((bot) => {
+                case "Bots with teamplay":
                     return bot.tags.some((tag) => tag === "teamplay");
-                });
-            case "Goalie bots":
-                return items.filter((bot) => {
+                case "Goalie bots":
                     return bot.tags.some((tag) => tag === "goalie");
-                });
-            default:
-                return items;
-        }
+                default:
+                    return items;
+            }
+        });
     }
 
     function handleTagClick(tag: string) {
@@ -98,7 +90,7 @@
 <div
     class="bots"
     use:dndzone={{
-        items,
+        items: filteredItems,
         flipDurationMs,
         centreDraggedOnCursor: true,
         dropTargetStyle: {},
@@ -107,7 +99,7 @@
     onconsider={handleDndConsider}
     onfinalize={handleDndFinalize}
 >
-    {#each filterBots() as bot (bot.id)}
+    {#each filteredItems as bot (bot.id)}
         <div class="bot" animate:flip={{ duration: flipDurationMs }}>
             <img src={bot.icon || defaultIcon} alt="icon" />
             <p>{bot.displayName}</p>
