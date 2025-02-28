@@ -35,7 +35,7 @@
                     case categories[1][2]:
                         return bot.tags.some((tag) => tag === "memebot");
                     default:
-                        return [];
+                        return true;
                 }
             });
         }
@@ -50,7 +50,7 @@
                     case categories[2][2]:
                         return bot.tags.some((tag) => tag === "goalie");
                     default:
-                        return [];
+                        return true;
                 }
             });
         }
