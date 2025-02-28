@@ -103,8 +103,8 @@ func (botInfo BotInfo) ToPlayerConfig(team uint32) *flat.PlayerConfigurationT {
 
 	return &flat.PlayerConfigurationT{
 		Variety: &flat.PlayerClassT{
-			Type:  flat.PlayerClassRLBot,
-			Value: &flat.RLBotT{},
+			Type:  flat.PlayerClassCustomBot,
+			Value: &flat.CustomBotT{},
 		},
 		Name:       botInfo.Config.Settings.Name,
 		AgentId:    botInfo.Config.Settings.AgentId,

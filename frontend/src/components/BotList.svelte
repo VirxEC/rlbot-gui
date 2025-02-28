@@ -10,14 +10,57 @@
     let { items = [] }: { items: DraggablePlayer[] } = $props();
     const flipDurationMs = 100;
 
-    // The following stuff copies the bots from the list instead of moving them
+    let selectedTag = $state("All");
+    const extraModeTags = ["hoops", "dropshot", "snow-day", "spike-rush", "heatseaker"];
+    const categories = [
+        ["All"],
+        ["Standard", "Extra Modes", "Special bots/scripts"],
+        ["Bots for 1v1", "Bots with teamplay", "Goalie bots"]
+    ];
+
+    function filterBots() {
+        switch (selectedTag) {
+            case "Standard":
+                return items.filter((bot) => {
+                    return !bot.tags.some((tag) =>
+                        [...extraModeTags, "memebot", "human"].includes(tag),
+                    );
+                });
+            case "Extra Modes":
+                return items.filter((bot) => {
+                    return bot.tags.some((tag) => extraModeTags.includes(tag));
+                });
+            case "Special bots/scripts":
+                return items.filter((bot) => {
+                    return bot.tags.some((tag) => tag === "memebot");
+                });
+            case "Bots for 1v1":
+                return items.filter((bot) => {
+                    return bot.tags.some((tag) => tag === "1v1");
+                });
+            case "Bots with teamplay":
+                return items.filter((bot) => {
+                    return bot.tags.some((tag) => tag === "teamplay");
+                });
+            case "Goalie bots":
+                return items.filter((bot) => {
+                    return bot.tags.some((tag) => tag === "goalie");
+                });
+            default:
+                return items;
+        }
+    }
+
+    function handleTagClick(tag: string) {
+        selectedTag = tag;
+    }
+
     let shouldIgnoreDndEvents = false;
     function handleDndConsider(e: any) {
         const { trigger, id } = e.detail.info;
         if (trigger === TRIGGERS.DRAG_STARTED) {
             const idx = items.findIndex((item) => item.id === id);
             const newId = `${id}_copy_${Math.round(Math.random() * 100000)}`;
-            // the line below was added in order to be compatible with version svelte-dnd-action 0.7.4 and above
             e.detail.items = e.detail.items.filter(
                 (item: any) => !item[SHADOW_ITEM_MARKER_PROPERTY_NAME],
             );
@@ -25,8 +68,6 @@
             items = e.detail.items;
             shouldIgnoreDndEvents = true;
         } else if (!shouldIgnoreDndEvents) {
-            // with this uncommented, this accepts bots dragged in from
-            // the team lists, we don't want that
             // items = e.detail.items;
         } else {
             items = [...items];
@@ -42,6 +83,18 @@
     }
 </script>
 
+<div class="tag-buttons">
+    {#each categories as tagGroup}
+        <div class="tag-group">
+            {#each tagGroup as tag}
+                <button onclick={() => handleTagClick(tag)} class:selected={selectedTag === tag}>
+                    {tag}
+                </button>
+            {/each}
+        </div>
+    {/each}
+</div>
+
 <div
     class="bots"
     use:dndzone={{
@@ -54,7 +107,7 @@
     onconsider={handleDndConsider}
     onfinalize={handleDndFinalize}
 >
-    {#each items as bot (bot.id)}
+    {#each filterBots() as bot (bot.id)}
         <div class="bot" animate:flip={{ duration: flipDurationMs }}>
             <img src={bot.icon || defaultIcon} alt="icon" />
             <p>{bot.displayName}</p>
@@ -63,6 +116,28 @@
 </div>
 
 <style>
+    .tag-buttons {
+        display: flex;
+        flex-direction: row;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    .tag-group {
+        display: flex;
+        gap: 0;
+    }
+    .tag-buttons button {
+        padding: 0.5rem 1rem;
+        border: 2px solid white;
+        border-radius: 0;
+        cursor: pointer;
+        background-color: var(--background-alt);
+    }
+    .tag-buttons button.selected {
+        background-color: white;
+        color: var(--background);
+        /* font-size: 1.1rem; */
+    }
     .bots {
         display: flex;
         gap: 0.5rem;

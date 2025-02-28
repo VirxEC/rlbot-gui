@@ -8,6 +8,7 @@ export const BASE_PLAYERS: DraggablePlayer[] = [
     icon: controller,
     id: Math.random(),
     player: new HumanInfo(),
+    tags: ["human"],
   },
   {
     displayName: "Psyonix Beginner",
@@ -16,6 +17,7 @@ export const BASE_PLAYERS: DraggablePlayer[] = [
     player: new PsyonixBotInfo({
       skill: 0,
     }),
+    tags: ["psyonix"],
   },
   {
     displayName: "Psyonix Rookie",
@@ -24,6 +26,7 @@ export const BASE_PLAYERS: DraggablePlayer[] = [
     player: new PsyonixBotInfo({
       skill: 1,
     }),
+    tags: ["psyonix"],
   },
   {
     displayName: "Psyonix Pro",
@@ -32,6 +35,7 @@ export const BASE_PLAYERS: DraggablePlayer[] = [
     player: new PsyonixBotInfo({
       skill: 2,
     }),
+    tags: ["psyonix"],
   },
   {
     displayName: "Psyonix Allstar",
@@ -40,5 +44,6 @@ export const BASE_PLAYERS: DraggablePlayer[] = [
     player: new PsyonixBotInfo({
       skill: 3,
     }),
+    tags: ["psyonix"],
   },
 ];

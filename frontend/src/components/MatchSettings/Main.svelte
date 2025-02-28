@@ -1,9 +1,8 @@
 <script lang="ts">
     import Select from "../NiceSelect.svelte";
     import Modal from "../Modal.svelte";
-    import { MAPS_STANDARD } from "../../arena-names.js";
+    import { MAPS_NON_STANDARD, MAPS_STANDARD } from "../../arena-names";
     import { mutators as mutatorOptions } from "./rlmutators";
-    import type { ExtraOptions } from "../../../bindings/gui";
     import LauncherSelector from "../LauncherSelector.svelte";
 
     let {
@@ -11,23 +10,12 @@
         mode = $bindable(),
         extraOptions = $bindable(),
         mutators = $bindable(),
-        launcher = $bindable(),
-        gamePath = $bindable(),
-        onStart = () => {},
+        onStart = (randomizeMap: boolean) => {},
         onStop = () => {},
     } = $props();
     let showExtraOptions = $state(false);
     let showMutators = $state(false);
-
-    const modes = [
-        "Soccer",
-        "Hoops",
-        "Dropshot",
-        "Hockey",
-        "Rumble",
-        "Heatseeker",
-        "Gridiron",
-    ];
+    let randomizeMap = $state(true);
 
     const existingMatchBehaviors: { [n: string]: number } = {
         "Restart if different": 0,
@@ -35,54 +23,69 @@
         "Continue and spawn": 2,
     };
 
-    function cleanCamelCase(toClean: string) {
-        return toClean
-            .replace(/[A-Z]/g, (letter) => ` ${letter.toLowerCase()}`)
-            .replace(/^[a-z]/, (letter) => letter.toUpperCase());
+    function cleanCase(toClean: string) {
+        toClean = toClean.replaceAll("_", " ").replace(" option", "")
+        return toClean.charAt(0).toUpperCase() + toClean.slice(1);
     }
+
+    const ALL_MAPS = {...MAPS_STANDARD, ...MAPS_NON_STANDARD};
+    const filteredMutatorOptions = Object.keys(mutatorOptions).filter((key) => key !== 'game_mode');
 </script>
 
 <div class="matchSettings">
     <h1>Match Settings</h1>
     <div class="content">
         <div class="settings">
-            <Select
-                options={MAPS_STANDARD}
-                bind:value={map}
-                placeholder="Select map"
-            />
-            <Select
-                options={Object.fromEntries(modes.map((x) => [x, x]))}
-                bind:value={mode}
-                placeholder="Select mode"
-            />
+            <div class="left-controls">
+                <Select
+                    options={ALL_MAPS}
+                    bind:value={map}
+                    placeholder="Select map"
+                />
+                <Select
+                    options={Object.fromEntries(mutatorOptions.game_mode.map((x) => [x, x]))}
+                    bind:value={mode}
+                    placeholder="Select mode"
+                />
+            </div>
+            <div class="right-controls">
+                <LauncherSelector />
+            </div>
         </div>
         <div class="controls">
-            <button class="start" onclick={()=>{onStart()}}>Start</button>
-            <button class="stop" onclick={()=>{onStop()}}>Stop</button>
-            <div></div>
-            <button
-                onclick={() => {
-                    showMutators = true;
-                }}>Mutators</button
-            >
-            <button
-                onclick={() => {
-                    showExtraOptions = true;
-                }}>Extra</button
-            >
-            <LauncherSelector bind:launcher bind:gamePath />
+            <div class="left-controls">
+                <button
+                    onclick={() => {
+                        showMutators = true;
+                    }}>Mutators</button
+                >
+                <button
+                    onclick={() => {
+                        showExtraOptions = true;
+                    }}>Extra</button
+                >
+                <input
+                    type="checkbox"
+                    id="randomizeMap"
+                    bind:checked={randomizeMap}
+                />
+                <label for="randomizeMap">Randomize Map</label>
+            </div>
+            <div class="right-controls">
+                <button class="start" onclick={()=>{onStart(randomizeMap)}}>Start Match</button>
+                <button class="stop" onclick={()=>{onStop()}}>Stop</button>
+            </div>
         </div>
     </div>
 </div>
 
 <Modal title="Rocket League Mutators" bind:visible={showMutators}>
     <div class="mutators">
-        {#each Object.keys(mutatorOptions) as mutatorKey}
+        {#each filteredMutatorOptions as mutatorKey}
             <div class="mutator">
                 <label
-                    style={mutators[mutatorKey] == 0 ? "color:grey" : ""}
-                    for={mutatorKey}>{cleanCamelCase(mutatorKey)}</label
+                    style={mutators[mutatorKey] == 0 ? "color:lightgrey" : ""}
+                    for={mutatorKey}>{cleanCase(mutatorKey)}</label
                 >
 
                 <select
@@ -174,6 +177,16 @@
     .settings,
     .controls {
         display: flex;
+        justify-content: space-between;
+        gap: 0.5rem;
+    }
+    .left-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .right-controls {
+        display: flex;
         gap: 0.5rem;
     }
     .content {
@@ -190,15 +203,20 @@
     .mutator {
         display: flex;
         flex-direction: column;
+        gap: 0.3rem;
     }
     .bottomButtons {
         display: flex;
         margin-top: 1rem;
         justify-content: space-between;
-        align-items: end;
+        align-items: center;
     }
     .mutatorResetButton {
         background-color: red;
+    }
+
+    .extraoptions > * {
+        margin-bottom: 0.5rem;
     }
 
     button.start {

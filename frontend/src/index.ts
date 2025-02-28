@@ -20,6 +20,7 @@ export interface DraggablePlayer {
   displayName: string;
   icon: string;
   player: BotInfo | PsyonixBotInfo | HumanInfo;
+  tags: string[];
 }
 
 export function draggablePlayerToPlayerJs(d: DraggablePlayer): PlayerJs {

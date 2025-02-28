@@ -2,13 +2,12 @@
     import toast from "svelte-5-french-toast";
     import { App, RHostBot, RHostServer } from "../../bindings/gui/index.js";
     import { MAPS_STANDARD } from "../arena-names";
-    import closeIcon from "../assets/close.svg"
+    import closeIcon from "../assets/close.svg";
     import Plus from "../assets/plus.svg.svelte";
     import LauncherSelector from "../components/LauncherSelector.svelte";
-    let { onBack } = $props();
+    import { mapStore } from "../settings";
 
     let waiting = $state(false);
-    let map = $state(MAPS_STANDARD.DFHStadium)
 
     let bots: RHostBot[] = $state([]);
     let botFamilies = $derived.by(() => {
@@ -39,13 +38,17 @@
     }
     refreshRHostBots();
 
-    let serverAddr: string = $state("");
+    let serverAddr: string = $state(localStorage.getItem("rhostServer") || "");
+    $effect(() => {
+        localStorage.setItem("rhostServer", serverAddr);
+    });
+
     let servers: RHostServer[] = $state([]);
-    $effect(()=>{
-      if (servers.length > 0) {
-        serverAddr = serverAddr === "" ? `${servers[0].ip}:${servers[0].port}` : serverAddr
-      }
-    })
+    $effect(() => {
+        if (servers.length > 0) {
+            serverAddr = serverAddr === "" ? `${servers[0].ip}:${servers[0].port}` : serverAddr;
+        }
+    });
 
     function refreshRHostServers() {
         App.GetRHostServers()
@@ -66,9 +69,6 @@
 
     let blueBots: string[] = $state([]);
     let orangeBots: string[] = $state([]);
-
-    let launcher = $state("steam");
-    let gamePath = $state("");
 </script>
 
 <div class="page">
@@ -168,39 +168,46 @@
                 <label for="serverselect">Server</label>
                 <select name="serverselect" id="serverselect" bind:value={serverAddr}>
                     {#each servers as value, i}
-                        <option value={`${value.ip}:${value.port}`}>{value.location}</option
-                        >
+                        <option value={`${value.ip}:${value.port}`}>{value.location}</option>
                     {/each}
                 </select>
             </div>
             <div>
                 <label for="mapselect">Map</label>
-                <select name="mapselect" id="mapselect" bind:value={map}>
+                <select name="mapselect" id="mapselect" bind:value={$mapStore}>
                     {#each Object.entries(MAPS_STANDARD) as map, i}
-                        <option value={map[1]}>{map[0]}</option
-                        >
+                        <option value={map[1]}>{map[0]}</option>
                     {/each}
                 </select>
             </div>
             <div>
                 <label for="mapselect">Launcher</label>
-                <LauncherSelector bind:launcher bind:gamePath />
+                <LauncherSelector />
             </div>
         </div>
 
         <div class="buttons">
             <button class="start" disabled={waiting} onclick={()=>{
+                let launcher = localStorage.getItem("launcher");
+                if (!launcher) {
+                    toast.error("Please select a launcher first", {
+                        position: "bottom-right",
+                        duration: 5000,
+                    });
+                    return;
+                }
+
                 waiting = true;
                 let id = toast.loading("Starting rocket host game...", {
                   position: "bottom-right"
                 })
                 App.StartRHostMatch({
                   server: serverAddr,
-                  map,
+                  map: $mapStore,
                   blueBots,
                   orangeBots,
                   launcher,
-                  gamePath
+                  launcherArg: localStorage.getItem("launcherArg") || ''
                 }).then((addr)=>{
                     waiting = false;
                     toast.success(

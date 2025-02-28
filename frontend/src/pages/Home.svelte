@@ -10,7 +10,6 @@
     import arenaImages from "../arena-images";
     import closeIcon from "../assets/close.svg";
     import reloadIcon from "../assets/reload.svg";
-    import { MAPS_STANDARD } from "../arena-names.js";
     import BotList from "../components/BotList.svelte";
     // @ts-ignore
     import Teams from "../components/Teams/Main.svelte";
@@ -18,6 +17,8 @@
     import MatchSettings from "../components/MatchSettings/Main.svelte";
     import { type DraggablePlayer, draggablePlayerToPlayerJs } from "../index";
     import { BASE_PLAYERS } from "../base-players";
+    import { mapStore } from "../settings";
+    import { MAPS_STANDARD } from "../arena-names";
 
     const backgroundImage =
         arenaImages[Math.floor(Math.random() * arenaImages.length)];
@@ -48,6 +49,7 @@
                 icon: x.config.settings.logoFile,
                 player: new BotInfo(x),
                 id: Math.random(),
+                tags: x.config.details.tags,
             };
             return n;
         });
@@ -64,18 +66,12 @@
     let bluePlayers: DraggablePlayer[] = $state([]);
     let orangePlayers: DraggablePlayer[] = $state([]);
 
-    let map = $state(
-        localStorage.getItem("MS_MAP") || MAPS_STANDARD.DFHStadium,
-    );
-    $effect(() => {
-        localStorage.setItem("MS_MAP", map);
-    });
     let mode = $state(localStorage.getItem("MS_MODE") || "Soccer");
     $effect(() => {
         localStorage.setItem("MS_MODE", mode);
     });
     let extraOptions = $state(
-        JSON.parse(localStorage.getItem("MS_EXTRAOPTIONS") || "{}"),
+        JSON.parse(localStorage.getItem("MS_EXTRAOPTIONS") || '{"enableStateSetting": true, "existingMatchBehavior": 1}'),
     );
     $effect(() => {
         localStorage.setItem("MS_EXTRAOPTIONS", JSON.stringify(extraOptions));
@@ -87,12 +83,24 @@
         localStorage.setItem("MS_MUTATORS", JSON.stringify(mutatorSettings));
     });
 
-    let launcher = $state("steam");
-    let gamePath = $state("");
+    async function onMatchStart(randomizeMap: boolean) {
+        let launcher = localStorage.getItem("launcher");
+        if (!launcher) {
+            toast.error("Please select a launcher first", {
+                position: "bottom-right",
+                duration: 5000,
+            });
+            return;
+        }
 
-    async function onMatchStart() {
+        if (randomizeMap) {
+            $mapStore = Object.values(MAPS_STANDARD)[
+                Math.floor(Math.random() * Object.keys(MAPS_STANDARD).length)
+            ];
+        }
+
         let options: StartMatchOptions = {
-            map,
+            map: $mapStore,
             gameMode: mode,
             bluePlayers: bluePlayers.map((x: DraggablePlayer) => {
                 // @ts-ignore
@@ -103,7 +111,7 @@
                 return draggablePlayerToPlayerJs(x);
             }),
             launcher,
-            gamePath,
+            launcherArg: localStorage.getItem("launcherArg") || '',
             mutatorSettings,
             extraOptions,
         };
@@ -199,12 +207,10 @@
         <MatchSettings
             onStart={onMatchStart}
             onStop={onMatchStop}
-            bind:map
+            bind:map={$mapStore}
             bind:mode
             bind:mutators={mutatorSettings}
             bind:extraOptions
-            bind:launcher
-            bind:gamePath
         />
     </div>
 </div>
