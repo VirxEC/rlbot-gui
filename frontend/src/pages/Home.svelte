@@ -49,6 +49,7 @@
                 icon: x.config.settings.logoFile,
                 player: new BotInfo(x),
                 id: Math.random(),
+                tags: x.config.details.tags,
             };
             return n;
         });
