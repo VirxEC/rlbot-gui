@@ -10,7 +10,7 @@
     let { items = [] }: { items: DraggablePlayer[] } = $props();
     const flipDurationMs = 100;
 
-    let selectedTag = $state("All");
+    let selectedTags: (string | null)[] = $state([null, null]);
     const extraModeTags = ["hoops", "dropshot", "snow-day", "spike-rush", "heatseaker"];
     const categories = [
         ["All"],
@@ -19,40 +19,49 @@
     ];
 
     function filterBots() {
-        switch (selectedTag) {
-            case "Standard":
-                return items.filter((bot) => {
-                    return !bot.tags.some((tag) =>
-                        [...extraModeTags, "memebot", "human"].includes(tag),
-                    );
-                });
-            case "Extra Modes":
-                return items.filter((bot) => {
-                    return bot.tags.some((tag) => extraModeTags.includes(tag));
-                });
-            case "Special bots/scripts":
-                return items.filter((bot) => {
-                    return bot.tags.some((tag) => tag === "memebot");
-                });
-            case "Bots for 1v1":
-                return items.filter((bot) => {
-                    return bot.tags.some((tag) => tag === "1v1");
-                });
-            case "Bots with teamplay":
-                return items.filter((bot) => {
-                    return bot.tags.some((tag) => tag === "teamplay");
-                });
-            case "Goalie bots":
-                return items.filter((bot) => {
-                    return bot.tags.some((tag) => tag === "goalie");
-                });
-            default:
-                return items;
+        let filteredItems = items;
+
+        if (selectedTags[0]) {
+            filteredItems = filteredItems.filter((bot) => {
+                switch (selectedTags[0]) {
+                    case categories[1][0]:
+                        return !bot.tags.some((tag) =>
+                            [...extraModeTags, "memebot", "human"].includes(tag),
+                        );
+                    case categories[1][1]:
+                        return bot.tags.some((tag) => extraModeTags.includes(tag));
+                    case categories[1][2]:
+                        return bot.tags.some((tag) => tag === "memebot");
+                    default:
+                        return [];
+                }
+            });
         }
+
+        if (selectedTags[1]) {
+            filteredItems = filteredItems.filter((bot) => {
+                switch (selectedTags[1]) {
+                    case categories[2][0]:
+                        return bot.tags.some((tag) => tag === "1v1");
+                    case categories[2][1]:
+                        return bot.tags.some((tag) => tag === "teamplay");
+                    case categories[2][2]:
+                        return bot.tags.some((tag) => tag === "goalie");
+                    default:
+                        return [];
+                }
+            });
+        }
+
+        return filteredItems;
     }
 
-    function handleTagClick(tag: string) {
-        selectedTag = tag;
+    function handleTagClick(tag: string, groupIndex: number) {
+        if (groupIndex === 0) {
+            selectedTags = [null, null];
+        } else {
+            selectedTags[groupIndex-1] = selectedTags[groupIndex-1] === tag ? null : tag;
+        }
     }
 
     let shouldIgnoreDndEvents = false;
@@ -84,10 +93,13 @@
 </script>
 
 <div class="tag-buttons">
-    {#each categories as tagGroup}
+    {#each categories as tagGroup, groupIndex}
         <div class="tag-group">
             {#each tagGroup as tag}
-                <button onclick={() => handleTagClick(tag)} class:selected={selectedTag === tag}>
+                <button
+                    onclick={() => handleTagClick(tag, groupIndex)}
+                    class:selected={tag === categories[0][0] ? selectedTags.every(t => t == null) : selectedTags[groupIndex-1] === tag}
+                >
                     {tag}
                 </button>
             {/each}
