@@ -4,7 +4,6 @@ import (
 	"context"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/ncruces/zenity"
 	rlbot "github.com/swz-git/go-interface"
@@ -39,18 +38,24 @@ func (a *App) startup(ctx context.Context) {
 // 	return fmt.Sprintf("Hello %s, It's show time!", name)
 // }
 
-func recursiveFileSearch(root, targetName string) ([]string, error) {
-	var matches []string
-	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if strings.HasSuffix(info.Name(), targetName) {
-			matches = append(matches, path)
-		}
-		return nil
-	})
-	return matches, err
+func recursiveFileSearch(root, pattern string) ([]string, error) {
+    var matches []string
+    err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+        if err != nil {
+            return err
+        }
+        if !info.IsDir() && (info.Name() == "bot.toml" || filepath.Ext(info.Name()) == ".bot.toml") {
+            matched, err := filepath.Match(pattern, info.Name())
+            if err != nil {
+                return err
+            }
+            if matched {
+                matches = append(matches, path)
+            }
+        }
+        return nil
+    })
+    return matches, err
 }
 
 type Result struct {
@@ -132,19 +137,19 @@ func (a *App) StartMatch(options StartMatchOptions) Result {
 
 	println(playerConfigs)
 
-	conn.SendPacket(&flat.MatchSettingsT{
+	conn.SendPacket(&flat.MatchConfigurationT{
 		AutoStartBots:         true,
 		GameMapUpk:            options.Map,
 		PlayerConfigurations:  playerConfigs,
 		GameMode:              gameMode,
-		MutatorSettings:       &options.MutatorSettings,
+		Mutators:              &options.MutatorSettings,
 		EnableRendering:       options.ExtraOptions.EnableRendering,
 		EnableStateSetting:    options.ExtraOptions.EnableStateSetting,
 		InstantStart:          options.ExtraOptions.InstantStart,
 		SkipReplays:           options.ExtraOptions.SkipReplays,
 		AutoSaveReplay:        options.ExtraOptions.AutoSaveReplay,
 		Launcher:              launcher,
-		GamePath:              options.GamePath,
+		LauncherArg:           options.GamePath,
 		ExistingMatchBehavior: flat.ExistingMatchBehavior(options.ExtraOptions.ExistingMatchBehavior),
 	})
 
