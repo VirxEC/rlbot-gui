@@ -38,9 +38,9 @@
     }
     refreshRHostBots();
 
-    let serverAddr: string = $state(localStorage.getItem("rhostServer") || "");
+    let serverAddr: string = $state(localStorage.getItem("RHOST_SERVER_ADDR") || "");
     $effect(() => {
-        localStorage.setItem("rhostServer", serverAddr);
+        localStorage.setItem("RHOST_SERVER_ADDR", serverAddr);
     });
 
     let servers: RHostServer[] = $state([]);
@@ -188,7 +188,7 @@
 
         <div class="buttons">
             <button class="start" disabled={waiting} onclick={()=>{
-                let launcher = localStorage.getItem("launcher");
+                let launcher = localStorage.getItem("MS_LAUNCHER");
                 if (!launcher) {
                     toast.error("Please select a launcher first", {
                         position: "bottom-right",
@@ -207,7 +207,7 @@
                   blueBots,
                   orangeBots,
                   launcher,
-                  launcherArg: localStorage.getItem("launcherArg") || ''
+                  launcherArg: localStorage.getItem("MS_LAUNCHER_ARG") || ''
                 }).then((addr)=>{
                     waiting = false;
                     toast.success(

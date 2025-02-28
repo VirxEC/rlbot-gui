@@ -2,8 +2,8 @@
     import Modal from "./Modal.svelte";
 
     let visible = $state(false);
-    let localLauncher = $state(localStorage.getItem('launcher') || '');
-    let localLauncherArg = $state(localStorage.getItem('launcherArg') || '');
+    let localLauncher = $state(localStorage.getItem('MS_LAUNCHER') || '');
+    let localLauncherArg = $state(localStorage.getItem('MS_LAUNCHER_ARG') || '');
 
     function uid() {
         return Date.now().toString(36) + Math.random().toString(36).substring(2);
@@ -12,11 +12,11 @@
 
     $effect(() => {
         if (localLauncher === 'legendary') {
-            localStorage.setItem('launcher', 'custom');
-            localStorage.setItem('launcherArg', 'legendary');
+            localStorage.setItem('MS_LAUNCHER', 'custom');
+            localStorage.setItem('MS_LAUNCHER_ARG', 'legendary');
         } else {
-            localStorage.setItem('launcher', localLauncher);
-            localStorage.setItem('launcherArg', localLauncherArg);
+            localStorage.setItem('MS_LAUNCHER', localLauncher);
+            localStorage.setItem('MS_LAUNCHER_ARG', localLauncherArg);
         }
     });
 </script>

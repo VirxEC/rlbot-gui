@@ -15,7 +15,7 @@
     } = $props();
     let showExtraOptions = $state(false);
     let showMutators = $state(false);
-    let randomizeMap = $state(true);
+    let randomizeMap = $state(false);
 
     const existingMatchBehaviors: { [n: string]: number } = {
         "Restart if different": 0,
@@ -179,6 +179,9 @@
         display: flex;
         justify-content: space-between;
         gap: 0.5rem;
+    }
+    #randomizeMap {
+        transform: scale(1.2);
     }
     .left-controls {
         display: flex;

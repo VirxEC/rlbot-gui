@@ -119,22 +119,35 @@
     .tag-buttons {
         display: flex;
         flex-direction: row;
+        justify-content: center;
+
         gap: 0.5rem;
-        margin-bottom: 1rem;
+        margin-bottom: .6rem;
     }
     .tag-group {
         display: flex;
-        gap: 0;
+        gap: 2px;
+        border: solid 1px gray;
+        --border-radius: 0.25rem;
+        border-radius: var(--border-radius);
     }
     .tag-buttons button {
         padding: 0.5rem 1rem;
-        border: 2px solid white;
         border-radius: 0;
         cursor: pointer;
         background-color: var(--background-alt);
     }
+    .tag-buttons button:first-child {
+        border-radius: var(--border-radius) 0 0 var(--border-radius);
+    }
+    .tag-buttons button:last-child {
+        border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+    .tag-buttons button:only-child {
+        border-radius: var(--border-radius);
+    }
     .tag-buttons button.selected {
-        background-color: white;
+        background-color: var(--foreground);
         color: var(--background);
         /* font-size: 1.1rem; */
     }
@@ -147,6 +160,7 @@
         display: flex;
         align-items: center;
         background-color: var(--background-alt);
+        color: var(--foreground);
         height: 2.25rem;
         padding: 0.2rem;
         padding-right: 0.6rem;

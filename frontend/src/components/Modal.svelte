@@ -2,31 +2,28 @@
     import close from "../assets/close.svg";
     let { title = "Modal", visible = $bindable(true), children } = $props();
 
-    let background: EventTarget;
     let wrap: EventTarget;
 
     function handleOuter(e: MouseEvent) {
-        if (e.target === background || e.target === wrap)
+        if (e.target === wrap)
             visible = false;
     }
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<div class={visible ? "" : "hidden"} bind:this={background} onclick={handleOuter}>
-    <div class="modalContainer" bind:this={wrap}>
-        <div class="modal">
-            <header>
-                <h2>{title}</h2>
-                <button
-                    onclick={() => {
-                        visible = false;
-                    }}><img src={close} alt="close" /></button
-                >
-            </header>
-            <div class="modalBody">
-                {@render children?.()}
-            </div>
+<div class={"modalContainer " + (visible ? "" : "hidden")} bind:this={wrap} onclick={handleOuter}>
+    <div class="modal">
+        <header>
+            <h2>{title}</h2>
+            <button
+                onclick={() => {
+                    visible = false;
+                }}><img src={close} alt="close" /></button
+            >
+        </header>
+        <div class="modalBody">
+            {@render children?.()}
         </div>
     </div>
 </div>
@@ -46,7 +43,7 @@
         transition: opacity 0.2s;
     }
 
-    .hidden * {
+    .hidden, .hidden * {
         opacity: 0;
         z-index: -100 !important;
     }
