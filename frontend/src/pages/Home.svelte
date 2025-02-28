@@ -87,10 +87,16 @@
         localStorage.setItem("MS_MUTATORS", JSON.stringify(mutatorSettings));
     });
 
-    let launcher = $state("steam");
-    let gamePath = $state("");
-
     async function onMatchStart() {
+        let launcher = localStorage.getItem("launcher");
+        if (!launcher) {
+            toast.error("Please select a launcher first", {
+                position: "bottom-right",
+                duration: 5000,
+            });
+            return;
+        }
+
         let options: StartMatchOptions = {
             map,
             gameMode: mode,
@@ -103,7 +109,7 @@
                 return draggablePlayerToPlayerJs(x);
             }),
             launcher,
-            gamePath,
+            launcherArg: localStorage.getItem("launcherArg") || '',
             mutatorSettings,
             extraOptions,
         };
@@ -203,8 +209,6 @@
             bind:mode
             bind:mutators={mutatorSettings}
             bind:extraOptions
-            bind:launcher
-            bind:gamePath
         />
     </div>
 </div>

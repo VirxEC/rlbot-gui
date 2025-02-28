@@ -39,23 +39,23 @@ func (a *App) startup(ctx context.Context) {
 // }
 
 func recursiveFileSearch(root, pattern string) ([]string, error) {
-    var matches []string
-    err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
-        if err != nil {
-            return err
-        }
-        if !info.IsDir() && (info.Name() == "bot.toml" || filepath.Ext(info.Name()) == ".bot.toml") {
-            matched, err := filepath.Match(pattern, info.Name())
-            if err != nil {
-                return err
-            }
-            if matched {
-                matches = append(matches, path)
-            }
-        }
-        return nil
-    })
-    return matches, err
+	var matches []string
+	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() && (info.Name() == "bot.toml" || filepath.Ext(info.Name()) == ".bot.toml") {
+			matched, err := filepath.Match(pattern, info.Name())
+			if err != nil {
+				return err
+			}
+			if matched {
+				matches = append(matches, path)
+			}
+		}
+		return nil
+	})
+	return matches, err
 }
 
 type Result struct {
@@ -80,7 +80,7 @@ type StartMatchOptions struct {
 	MutatorSettings flat.MutatorSettingsT `json:"mutatorSettings"`
 	ExtraOptions    ExtraOptions          `json:"extraOptions"`
 	Launcher        string                `json:"launcher"`
-	GamePath        string                `json:"gamePath"`
+	LauncherArg     string                `json:"launcherArg"`
 }
 
 func (a *App) StartMatch(options StartMatchOptions) Result {
@@ -120,9 +120,11 @@ func (a *App) StartMatch(options StartMatchOptions) Result {
 		launcher = flat.LauncherEpic
 	case "custom":
 		launcher = flat.LauncherCustom
+	case "noLaunch":
+		launcher = flat.LauncherNoLaunch
 	default:
-		println("No launcher chosen, defaulting to steam")
-		launcher = flat.LauncherSteam
+		println("No launcher chosen, defaulting to NoLaunch")
+		launcher = flat.LauncherNoLaunch
 	}
 
 	var playerConfigs []*flat.PlayerConfigurationT
@@ -149,7 +151,7 @@ func (a *App) StartMatch(options StartMatchOptions) Result {
 		SkipReplays:           options.ExtraOptions.SkipReplays,
 		AutoSaveReplay:        options.ExtraOptions.AutoSaveReplay,
 		Launcher:              launcher,
-		LauncherArg:           options.GamePath,
+		LauncherArg:           options.LauncherArg,
 		ExistingMatchBehavior: flat.ExistingMatchBehavior(options.ExtraOptions.ExistingMatchBehavior),
 	})
 

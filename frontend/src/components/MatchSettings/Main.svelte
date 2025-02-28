@@ -3,7 +3,6 @@
     import Modal from "../Modal.svelte";
     import { MAPS_STANDARD } from "../../arena-names.js";
     import { mutators as mutatorOptions } from "./rlmutators";
-    import type { ExtraOptions } from "../../../bindings/gui";
     import LauncherSelector from "../LauncherSelector.svelte";
 
     let {
@@ -11,8 +10,6 @@
         mode = $bindable(),
         extraOptions = $bindable(),
         mutators = $bindable(),
-        launcher = $bindable(),
-        gamePath = $bindable(),
         onStart = () => {},
         onStop = () => {},
     } = $props();
@@ -71,7 +68,7 @@
                     showExtraOptions = true;
                 }}>Extra</button
             >
-            <LauncherSelector bind:launcher bind:gamePath />
+            <LauncherSelector />
         </div>
     </div>
 </div>

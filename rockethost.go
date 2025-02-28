@@ -108,12 +108,12 @@ func (a *App) GetRHostServers() ([]RHostServer, error) {
 // &rlbot=yes&blueBots=FridgeV5&orangeBots=
 
 type RHostMatchSettings struct {
-	Server     string   `json:"server"`
-	Map        string   `json:"map"`
-	BlueBots   []string `json:"blueBots"`
-	OrangeBots []string `json:"orangeBots"`
-	Launcher   string   `json:"launcher"`
-	GamePath   string   `json:"gamePath"`
+	Server      string   `json:"server"`
+	Map         string   `json:"map"`
+	BlueBots    []string `json:"blueBots"`
+	OrangeBots  []string `json:"orangeBots"`
+	Launcher    string   `json:"launcher"`
+	LauncherArg string   `json:"launcherArg"`
 }
 
 func (a *App) StartRHostMatch(settings RHostMatchSettings) (string, error) {
@@ -155,9 +155,11 @@ func (a *App) StartRHostMatch(settings RHostMatchSettings) (string, error) {
 		launcher = flat.LauncherEpic
 	case "custom":
 		launcher = flat.LauncherCustom
+	case "noLaunch":
+		launcher = flat.LauncherNoLaunch
 	default:
-		println("No launcher chosen, defaulting to steam")
-		launcher = flat.LauncherSteam
+		println("No launcher chosen, defaulting to NoLaunch")
+		launcher = flat.LauncherNoLaunch
 	}
 
 	err = conn.SendPacket(&flat.MatchConfigurationT{
@@ -178,7 +180,7 @@ func (a *App) StartRHostMatch(settings RHostMatchSettings) (string, error) {
 		EnableStateSetting:    true,
 		EnableRendering:       true,
 		Launcher:              launcher,
-		LauncherArg:           settings.GamePath,
+		LauncherArg:           settings.LauncherArg,
 	})
 	if err != nil {
 		return "", errors.New("Couldn't send matchconfiguration packet")
