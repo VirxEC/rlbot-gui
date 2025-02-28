@@ -18,7 +18,7 @@
     import { type DraggablePlayer, draggablePlayerToPlayerJs } from "../index";
     import { BASE_PLAYERS } from "../base-players";
     import { mapStore } from "../settings";
-    import { MAPS_STANDARD } from "../arena-names.js";
+    import { MAPS_STANDARD } from "../arena-names";
 
     const backgroundImage =
         arenaImages[Math.floor(Math.random() * arenaImages.length)];

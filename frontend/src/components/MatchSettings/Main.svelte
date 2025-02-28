@@ -1,7 +1,7 @@
 <script lang="ts">
     import Select from "../NiceSelect.svelte";
     import Modal from "../Modal.svelte";
-    import { MAPS_NON_STANDARD, MAPS_STANDARD } from "../../arena-names.js";
+    import { MAPS_NON_STANDARD, MAPS_STANDARD } from "../../arena-names";
     import { mutators as mutatorOptions } from "./rlmutators";
     import LauncherSelector from "../LauncherSelector.svelte";
 
