@@ -19,12 +19,11 @@
     import { BASE_PLAYERS } from "../base-players";
     import { mapStore } from "../settings";
     import { MAPS_STANDARD } from "../arena-names";
+    import PathsViewer from "../components/PathsViewer.svelte";
+    import { alertToScreenReader } from "svelte-dnd-action";
 
     const backgroundImage =
         arenaImages[Math.floor(Math.random() * arenaImages.length)];
-    // const backgroundImage = arenaImages.find((x) =>
-    //     x.includes("Mannfield_Stormy"),
-    // );
 
     let paths = $state(
         JSON.parse(window.localStorage.getItem("BOT_SEARCH_PATHS") || "[]"),
@@ -34,6 +33,8 @@
 
     let loadingPlayers = $state(false);
     let latestBotUpdateTime = null;
+    let showPathsViewer = $state(false);
+
     async function updateBots() {
         loadingPlayers = true;
         let internalUpdateTime = new Date();
@@ -160,33 +161,7 @@
         <header>
             <h1>Bots</h1>
             <div class="dropdown">
-                <button>Add/Remove</button>
-                <div class="dropmenu">
-                    {#each paths as path, i}
-                        <div class="path">
-                            <pre>{path}</pre>
-                            <button
-                                class="close"
-                                onclick={() => {
-                                    paths.splice(i, 1);
-                                    // makes reactivity work
-                                    paths = paths;
-                                }}
-                            >
-                                <img src={closeIcon} alt="X" />
-                            </button>
-                        </div>
-                    {/each}
-                    <button
-                        onclick={async () => {
-                            let result = await App.PickFolder();
-                            console.log("PickFolder returned:", result);
-                            if (result != "") {
-                                paths = [...paths, result];
-                            }
-                        }}>Add folder</button
-                    >
-                </div>
+                <button onclick={() => { showPathsViewer = true }}>Add/Remove</button>
             </div>
             {#if loadingPlayers}
                 <h3>Searching...</h3>
@@ -214,6 +189,8 @@
         />
     </div>
 </div>
+
+<PathsViewer bind:visible={showPathsViewer} bind:paths={paths} />
 
 <style>
     .page {
@@ -253,22 +230,6 @@
         padding: 0px;
     }
     .reloadButton img {
-        filter: invert();
-    }
-    .path {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        justify-content: space-between;
-    }
-    .path pre {
-        font-size: 1rem;
-        margin: 0px;
-    }
-    .path button {
-        padding: 0px;
-    }
-    .path button img {
         filter: invert();
     }
 </style>
