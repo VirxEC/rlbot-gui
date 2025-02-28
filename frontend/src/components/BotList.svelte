@@ -18,12 +18,14 @@
         ["Bots for 1v1", "Bots with teamplay", "Goalie bots"]
     ];
 
-    function filterBots() {
-        let filteredItems = items;
+    let filteredItems = $derived(filterBots(selectedTags))
 
-        if (selectedTags[0]) {
-            filteredItems = filteredItems.filter((bot) => {
-                switch (selectedTags[0]) {
+    function filterBots(filterTags: (string | null)[]) {
+        let filtered = [...items];
+
+        if (filterTags[0]) {
+            filtered = filtered.filter((bot) => {
+                switch (filterTags[0]) {
                     case categories[1][0]:
                         return !bot.tags.some((tag) =>
                             [...extraModeTags, "memebot", "human"].includes(tag),
@@ -38,9 +40,9 @@
             });
         }
 
-        if (selectedTags[1]) {
-            filteredItems = filteredItems.filter((bot) => {
-                switch (selectedTags[1]) {
+        if (filterTags[1]) {
+            filtered = filtered.filter((bot) => {
+                switch (filterTags[1]) {
                     case categories[2][0]:
                         return bot.tags.some((tag) => tag === "1v1");
                     case categories[2][1]:
@@ -53,32 +55,8 @@
             });
         }
 
-        return filteredItems;
+        return filtered;
     }
-//     let filteredItems = $derived(filterBots(selectedTag))
-
-//     function filterBots(filterTag: string) {
-//         return items.filter((bot) => {
-//             switch (filterTag) {
-//                 case "Standard":
-//                     return !bot.tags.some((tag) =>
-//                         [...extraModeTags, "memebot", "human"].includes(tag),
-//                     );
-//                 case "Extra Modes":
-//                     return bot.tags.some((tag) => extraModeTags.includes(tag));
-//                 case "Special bots/scripts":
-//                     return bot.tags.some((tag) => tag === "memebot");
-//                 case "Bots for 1v1":
-//                     return bot.tags.some((tag) => tag === "1v1");
-//                 case "Bots with teamplay":
-//                     return bot.tags.some((tag) => tag === "teamplay");
-//                 case "Goalie bots":
-//                     return bot.tags.some((tag) => tag === "goalie");
-//                 default:
-//                     return items;
-//             }
-//         });
-//     }
 
     function handleTagClick(tag: string, groupIndex: number) {
         if (groupIndex === 0) {
