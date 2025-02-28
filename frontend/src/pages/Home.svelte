@@ -70,7 +70,7 @@
         localStorage.setItem("MS_MODE", mode);
     });
     let extraOptions = $state(
-        JSON.parse(localStorage.getItem("MS_EXTRAOPTIONS") || "{}"),
+        JSON.parse(localStorage.getItem("MS_EXTRAOPTIONS") || '{"enableStateSetting": true, "existingMatchBehavior": 1}'),
     );
     $effect(() => {
         localStorage.setItem("MS_EXTRAOPTIONS", JSON.stringify(extraOptions));

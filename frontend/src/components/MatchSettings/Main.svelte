@@ -215,6 +215,10 @@
         background-color: red;
     }
 
+    .extraoptions > * {
+        margin-bottom: 0.5rem;
+    }
+
     button.start {
         background-color: #15680e;
     }
