@@ -4,15 +4,20 @@
 
     let wrap: EventTarget;
 
+    let mouseDownWasOutside = false;
+
     function handleOuter(e: MouseEvent) {
-        if (e.target === wrap)
+        if (e.target === wrap && mouseDownWasOutside)
             visible = false;
+    }
+    function handleMouseDown(e: MouseEvent) {
+        return mouseDownWasOutside = e.target === wrap;
     }
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<div class={"modalContainer " + (visible ? "" : "hidden")} bind:this={wrap} onclick={handleOuter}>
+<div class={"modalContainer " + (visible ? "" : "hidden")} bind:this={wrap} onclick={handleOuter} onmousedown={handleMouseDown}>
     <div class="modal">
         <header>
             <h2>{title}</h2>
