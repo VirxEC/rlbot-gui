@@ -1,6 +1,12 @@
 <script lang="ts">
     import close from "../assets/close.svg";
-    let { title = "Modal", visible = $bindable(true), children } = $props();
+    let {
+        title = "Modal",
+        visible = $bindable(true),
+        children,
+        minWidth = "20vw",
+        minHeight = "20vh"
+    } = $props();
 
     let background: EventTarget;
     let wrap: EventTarget;
@@ -15,7 +21,7 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class={visible ? "" : "hidden"} bind:this={background} onclick={handleOuter}>
     <div class="modalContainer" bind:this={wrap}>
-        <div class="modal">
+        <div class="modal" style={`min-width: ${minWidth}; min-height: ${minHeight};`}>
             <header>
                 <h2>{title}</h2>
                 <button
@@ -55,8 +61,6 @@
         background-color: var(--background);
         padding: 0.2rem;
         border-radius: 0.6rem;
-        min-width: 20vw;
-        min-height: 20vh;
     }
     header {
         padding: 0.2rem;
@@ -64,6 +68,7 @@
         border-bottom: 1px solid var(--background-alt);
         display: flex;
         justify-content: space-between;
+        align-items: center;
     }
     header button {
         padding: 0px;
