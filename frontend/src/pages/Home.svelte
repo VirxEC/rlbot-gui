@@ -85,7 +85,7 @@
     });
 
     async function onMatchStart(randomizeMap: boolean) {
-        let launcher = localStorage.getItem("launcher");
+        let launcher = localStorage.getItem("MS_LAUNCHER");
         if (!launcher) {
             toast.error("Please select a launcher first", {
                 position: "bottom-right",
@@ -112,7 +112,7 @@
                 return draggablePlayerToPlayerJs(x);
             }),
             launcher,
-            launcherArg: localStorage.getItem("launcherArg") || '',
+            launcherArg: localStorage.getItem("MS_LAUNCHER_ARG") || '',
             mutatorSettings,
             extraOptions,
         };
