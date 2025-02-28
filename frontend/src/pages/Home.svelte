@@ -18,6 +18,7 @@
     import { type DraggablePlayer, draggablePlayerToPlayerJs } from "../index";
     import { BASE_PLAYERS } from "../base-players";
     import { mapStore } from "../settings";
+    import { MAPS_STANDARD } from "../arena-names.js";
 
     const backgroundImage =
         arenaImages[Math.floor(Math.random() * arenaImages.length)];
@@ -81,7 +82,7 @@
         localStorage.setItem("MS_MUTATORS", JSON.stringify(mutatorSettings));
     });
 
-    async function onMatchStart() {
+    async function onMatchStart(randomizeMap: boolean) {
         let launcher = localStorage.getItem("launcher");
         if (!launcher) {
             toast.error("Please select a launcher first", {
@@ -89,6 +90,12 @@
                 duration: 5000,
             });
             return;
+        }
+
+        if (randomizeMap) {
+            $mapStore = Object.values(MAPS_STANDARD)[
+                Math.floor(Math.random() * Object.keys(MAPS_STANDARD).length)
+            ];
         }
 
         let options: StartMatchOptions = {
