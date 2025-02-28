@@ -10,7 +10,6 @@
     import arenaImages from "../arena-images";
     import closeIcon from "../assets/close.svg";
     import reloadIcon from "../assets/reload.svg";
-    import { MAPS_STANDARD } from "../arena-names.js";
     import BotList from "../components/BotList.svelte";
     // @ts-ignore
     import Teams from "../components/Teams/Main.svelte";
@@ -18,6 +17,7 @@
     import MatchSettings from "../components/MatchSettings/Main.svelte";
     import { type DraggablePlayer, draggablePlayerToPlayerJs } from "../index";
     import { BASE_PLAYERS } from "../base-players";
+    import { mapStore } from "../settings";
 
     const backgroundImage =
         arenaImages[Math.floor(Math.random() * arenaImages.length)];
@@ -64,12 +64,6 @@
     let bluePlayers: DraggablePlayer[] = $state([]);
     let orangePlayers: DraggablePlayer[] = $state([]);
 
-    let map = $state(
-        localStorage.getItem("MS_MAP") || MAPS_STANDARD.DFHStadium,
-    );
-    $effect(() => {
-        localStorage.setItem("MS_MAP", map);
-    });
     let mode = $state(localStorage.getItem("MS_MODE") || "Soccer");
     $effect(() => {
         localStorage.setItem("MS_MODE", mode);
@@ -98,7 +92,7 @@
         }
 
         let options: StartMatchOptions = {
-            map,
+            map: $mapStore,
             gameMode: mode,
             bluePlayers: bluePlayers.map((x: DraggablePlayer) => {
                 // @ts-ignore
@@ -205,7 +199,7 @@
         <MatchSettings
             onStart={onMatchStart}
             onStop={onMatchStop}
-            bind:map
+            bind:map={$mapStore}
             bind:mode
             bind:mutators={mutatorSettings}
             bind:extraOptions

@@ -5,10 +5,9 @@
     import closeIcon from "../assets/close.svg";
     import Plus from "../assets/plus.svg.svelte";
     import LauncherSelector from "../components/LauncherSelector.svelte";
-    let { onBack } = $props();
+    import { mapStore } from "../settings";
 
     let waiting = $state(false);
-    let map = $state(MAPS_STANDARD.DFHStadium);
 
     let bots: RHostBot[] = $state([]);
     let botFamilies = $derived.by(() => {
@@ -39,7 +38,11 @@
     }
     refreshRHostBots();
 
-    let serverAddr: string = $state("");
+    let serverAddr: string = $state(localStorage.getItem("rhostServer") || "");
+    $effect(() => {
+        localStorage.setItem("rhostServer", serverAddr);
+    });
+
     let servers: RHostServer[] = $state([]);
     $effect(() => {
         if (servers.length > 0) {
@@ -171,7 +174,7 @@
             </div>
             <div>
                 <label for="mapselect">Map</label>
-                <select name="mapselect" id="mapselect" bind:value={map}>
+                <select name="mapselect" id="mapselect" bind:value={$mapStore}>
                     {#each Object.entries(MAPS_STANDARD) as map, i}
                         <option value={map[1]}>{map[0]}</option>
                     {/each}
@@ -200,7 +203,7 @@
                 })
                 App.StartRHostMatch({
                   server: serverAddr,
-                  map,
+                  map: $mapStore,
                   blueBots,
                   orangeBots,
                   launcher,

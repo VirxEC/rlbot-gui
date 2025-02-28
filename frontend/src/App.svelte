@@ -12,6 +12,9 @@
 <main>
     <div class="navbar">
         <div>
+            <!-- svelte-ignore a11y_click_events_have_key_events -->
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
+            <!-- svelte-ignore a11y_missing_attribute -->
             <a
                 onclick={() => {
                     activePage = "home";
@@ -63,11 +66,7 @@
     <div
         class={activePage == "rhost" ? "pageContainer" : "pageContainer hidden"}
     >
-        <RocketHost
-            onBack={() => {
-                activePage = "home";
-            }}
-        />
+        <RocketHost />
     </div>
 </main>
 
