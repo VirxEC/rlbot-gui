@@ -160,35 +160,35 @@ func (a *App) StartRHostMatch(settings RHostMatchSettings) (string, error) {
 		launcher = flat.LauncherSteam
 	}
 
-	err = conn.SendPacket(&flat.MatchSettingsT{
+	err = conn.SendPacket(&flat.MatchConfigurationT{
 		PlayerConfigurations: []*flat.PlayerConfigurationT{},
 		ScriptConfigurations: []*flat.ScriptConfigurationT{
 			{
 				Name:       "GUIv5",
-				Location:   "",
+				RootDir:    "",
 				RunCommand: "",
 				SpawnId:    0,
 				AgentId:    "rlbot/gui",
 			},
 		},
 		GameMode:              flat.GameModeSoccer,
-		MutatorSettings:       &flat.MutatorSettingsT{},
+		Mutators:              &flat.MutatorSettingsT{},
 		ExistingMatchBehavior: flat.ExistingMatchBehaviorRestart,
 		GameMapUpk:            settings.Map,
 		EnableStateSetting:    true,
 		EnableRendering:       true,
 		Launcher:              launcher,
-		GamePath:              settings.GamePath,
+		LauncherArg:           settings.GamePath,
 	})
 	if err != nil {
-		return "", errors.New("Couldn't send matchsettings packet")
+		return "", errors.New("Couldn't send matchconfiguration packet")
 	}
 
 	err = conn.SendPacket(&flat.ConnectionSettingsT{
 		AgentId:              "rlbot/gui",
 		WantsBallPredictions: false,
 		WantsComms:           false,
-		CloseAfterMatch:      false,
+		CloseBetweenMatches:  false,
 	})
 	if err != nil {
 		return "", errors.New("Couldn't send connectionsettings packet")
@@ -265,7 +265,7 @@ outer:
 
 	err = conn.SendPacket(&flat.DesiredGameStateT{
 		ConsoleCommands: []*flat.ConsoleCommandT{
-			&flat.ConsoleCommandT{
+			{
 				Command: fmt.Sprintf("start %s/?Lan?Password=", result.Message),
 			},
 		},
