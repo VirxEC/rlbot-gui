@@ -1,8 +1,8 @@
 <script lang="ts">
-import { App } from "../../bindings/gui";
-import Modal from "./Modal.svelte";
-import closeIcon from "../assets/close.svg";
 import toast from "svelte-5-french-toast";
+import { App } from "../../bindings/gui";
+import closeIcon from "../assets/close.svg";
+import Modal from "./Modal.svelte";
 
 const OFFICIAL_BOTPACK_REPO = "VirxEC/botpack-test";
 
@@ -25,7 +25,7 @@ let installPath = $state("");
 
 function setDefaultPath() {
   App.GetDefaultPath().then((result) => {
-    installPath = result + "/RLBotPack";
+    installPath = `${result}/RLBotPack`;
   });
 }
 
@@ -101,7 +101,7 @@ function confirmAddBotpack() {
       closeAddBotpackModal();
     })
     .catch((err) => {
-      toast.error("Failed to download botpack: " + err, {
+      toast.error(`Failed to download botpack: ${err}`, {
         duration: 10000,
         id,
       });

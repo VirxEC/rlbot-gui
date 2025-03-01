@@ -2,15 +2,10 @@
 
 A GUI for [RLBot](https://rlbot.org) v5 written in go and powered by [wails](https://wails.io) (v3 alpha).
 
-## Building
+## Info
 
-1. [Install deps](#Installing-build-dependencies)
-2. Run `wails3 build`
-
-## Developing
-
-1. [Install deps](#Installing-build-dependencies)
-2. Run `wails3 dev`
+This project is built using a justfile. Run `just build` to build, `just dev` to run in dev mode, `just lint` to lint
+and `just format` to format. Remember to [install dependencies](#Installing-build-dependencies) first.
 
 ## Installing build dependencies
 
