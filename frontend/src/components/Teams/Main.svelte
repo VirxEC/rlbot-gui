@@ -62,7 +62,7 @@ function toggleTeam(team: "blue" | "orange") {
         display: flex;
         flex-direction: column;
         border: 2px solid transparent;
-        border-radius: 0.6rem 0.6rem 0px 0px;
+        border-radius: 0.6rem;
         max-height: 100%; /* Ensures the team does not grow beyond its container */
     }
     .teams > .team > header {

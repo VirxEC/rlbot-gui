@@ -38,8 +38,15 @@ func (a *App) GetDefaultPath() string {
 		return filepath.Join(localappdata, "RLBotGUI")
 	}
 
-	home := os.Getenv("HOME")
-	return filepath.Join(home, ".rlbotgui")
+	// assume linux
+
+	xdg_data_home := os.Getenv("XDG_DATA_HOME")
+	if xdg_data_home != "" {
+		home := os.Getenv("HOME")
+		xdg_data_home = filepath.Join(home, ".local/share")
+	}
+
+	return filepath.Join(xdg_data_home, "rlbotgui")
 }
 
 func (a *App) GetLatestReleaseData(repo string) (*GhRelease, error) {

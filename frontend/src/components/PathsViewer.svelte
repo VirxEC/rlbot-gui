@@ -51,7 +51,7 @@ function closeAddBotpackModal() {
 function addFolder() {
   App.PickFolder().then((result) => {
     if (result) {
-      if (paths.some((x) => x.installPath === installPath)) {
+      if (paths.some((x) => x.installPath === result)) {
         toast.error("Path already added");
         return;
       }
