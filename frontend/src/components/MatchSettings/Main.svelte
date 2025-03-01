@@ -4,6 +4,7 @@
     import { MAPS_NON_STANDARD, MAPS_STANDARD } from "../../arena-names";
     import { mutators as mutatorOptions } from "./rlmutators";
     import LauncherSelector from "../LauncherSelector.svelte";
+    import { gamemodes } from "./rlmodes";
 
     let {
         map = $bindable(),
@@ -29,6 +30,44 @@
     function cleanCase(toClean: string) {
         toClean = toClean.replaceAll("_", " ").replace(" option", "")
         return toClean.charAt(0).toUpperCase() + toClean.slice(1);
+    }
+
+    function resetMutators() {
+        for (let key of Object.keys(mutators)) {
+            mutators[key] = 0;
+        }
+    }
+
+    function setPreset(preset: string) {
+        if (preset === "") {
+            mode = mutatorOptions.game_mode[0];
+            map = MAPS_STANDARD["DFH Stadium"];
+            randomizeMap = true;
+            resetMutators();
+            return;
+        }
+
+        const presetData = gamemodes[preset];
+        if (!presetData) return;
+
+        if (presetData.match["game_mode"] !== undefined) {
+            mode = presetData.match["game_mode"];
+        }
+
+        if (presetData.match["game_map_upk"] !== undefined) {
+            map = presetData.match["game_map_upk"];
+            randomizeMap = false;
+        } else {
+            randomizeMap = true;
+        }
+
+        for (let key of filteredMutatorOptions) {
+            if (presetData.mutators[key] !== undefined) {
+                mutators[key] = mutatorOptions[key].indexOf(presetData.mutators[key]);
+            } else {
+                mutators[key] = 0;
+            }
+        }
     }
 
     const ALL_MAPS = {...MAPS_STANDARD, ...MAPS_NON_STANDARD};
@@ -102,16 +141,24 @@
                 </select>
             </div>
         {/each}
+        <div></div>
+        <div class="mutator">
+            <label for="gamemode"><b>Presets</b></label>
+            <select name="gamemode" id="gamemode" onchange={(e) => {
+                // @ts-ignore
+                setPreset(e.target.value)
+            }}>
+                {#each ["", ...Object.keys(gamemodes)] as gamemode}
+                    <option value={gamemode}>{gamemode}</option>
+                {/each}
+            </select>
+        </div>
     </div>
     <div class="bottomButtons">
         <p>Settings are saved automatically</p>
         <button
             class="mutatorResetButton"
-            onclick={() => {
-                for (let key of Object.keys(mutators)) {
-                    mutators[key] = 0;
-                }
-            }}>Reset</button
+            onclick={resetMutators}>Reset</button
         >
     </div>
 </Modal>
