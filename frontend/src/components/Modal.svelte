@@ -24,6 +24,7 @@
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class={"modalContainer " + (visible ? "" : "hidden")} bind:this={wrap} onclick={handleOuter} onmousedown={handleMouseDown}>
+    <!-- TODO: Revert the min width/height stuff as it can be done in the child elements -->
     <div class="modal" style={`min-width: ${minWidth}; min-height: ${minHeight};`}>
         <header>
             <h2>{title}</h2>
