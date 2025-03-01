@@ -109,7 +109,7 @@ function confirmAddBotpack() {
 }
 </script>
 
-<Modal title="Manage Paths" bind:visible={visible} minWidth="70vw" minHeight="50vh">
+<Modal title="Manage Paths" bind:visible={visible}>
     <div class="paths">
         <div class="button-row">
             <!-- TODO: this class is not needed -->
@@ -129,7 +129,7 @@ function confirmAddBotpack() {
     </div>
 </Modal>
 
-<Modal title="Add Botpack" bind:visible={addBotpackVisible} minWidth="50vw">
+<Modal title="Add Botpack" bind:visible={addBotpackVisible}>
     <div class="add-botpack">
         <label for="path">Botpack install path</label>
         <input type="text" id="path" placeholder="Enter install path" bind:value={installPath} />
@@ -158,6 +158,8 @@ function confirmAddBotpack() {
         display: flex;
         flex-direction: column;
         gap: 1rem;
+        min-width: 70vw;
+        min-height: 50vh;
     }
     .button-row {
         display: flex;
@@ -186,6 +188,7 @@ function confirmAddBotpack() {
         display: flex;
         flex-direction: column;
         gap: 1rem;
+        min-width: 50vw;
     }
     .radio-group {
         flex-direction: column;
