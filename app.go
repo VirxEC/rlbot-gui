@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"os"
 	"path/filepath"
 
@@ -12,7 +11,7 @@ import (
 
 // App struct
 type App struct {
-	ctx context.Context
+	rlbot_address string
 }
 
 func (a *App) IgnoreMe(
@@ -24,13 +23,23 @@ func (a *App) IgnoreMe(
 
 // NewApp creates a new App application struct
 func NewApp() *App {
-	return &App{}
-}
+	ip := os.Getenv("RLBOT_SERVER_IP")
+	if ip == "" {
+		ip = "127.0.0.1"
+	}
 
-// startup is called when the app starts. The context is saved
-// so we can call the runtime methods
-func (a *App) startup(ctx context.Context) {
-	a.ctx = ctx
+	port := os.Getenv("RLBOT_SERVER_PORT")
+	if port == "" {
+		port = "23234"
+	}
+
+	rlbot_address := ip + ":" + port
+	// print the address
+	println("RLBotServer address: " + rlbot_address)
+
+	return &App{
+		rlbot_address,
+	}
 }
 
 // // Greet returns a greeting for the given name
@@ -85,10 +94,9 @@ type StartMatchOptions struct {
 
 func (a *App) StartMatch(options StartMatchOptions) Result {
 	// TODO: Save this in App struct
-	// TODO: Make dynamic, pull from env var?
-	conn, err := rlbot.Connect("127.0.0.1:23234")
+	conn, err := rlbot.Connect(a.rlbot_address)
 	if err != nil {
-		return Result{false, "Failed to connect to rlbot"}
+		return Result{false, "Failed to connect to RLBotServer at " + a.rlbot_address}
 	}
 
 	var gameMode flat.GameMode
@@ -107,6 +115,8 @@ func (a *App) StartMatch(options StartMatchOptions) Result {
 		gameMode = flat.GameModeHeatseeker
 	case "Gridiron":
 		gameMode = flat.GameModeGridiron
+	case "Knockout":
+		gameMode = flat.GameModeKnockout
 	default:
 		println("No mode chosen, defaulting to soccer")
 		gameMode = flat.GameModeSoccer

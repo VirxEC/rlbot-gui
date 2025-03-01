@@ -17,7 +17,7 @@ func main() {
 	app := application.New(application.Options{
 		Name: "rlbotgui",
 		Services: []application.Service{
-			application.NewService(&App{}),
+			application.NewService(NewApp()),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
@@ -35,7 +35,6 @@ func main() {
 		// 	Assets: assets,
 		// },
 		BackgroundColour: application.NewRGBA(27, 38, 54, 1),
-		// OnStartup:        app.startup,
 		// Bind: []interface{}{
 		// 	app,
 		// 	&HumanInfo{},

@@ -141,10 +141,9 @@ func (a *App) StartRHostMatch(settings RHostMatchSettings) (string, error) {
 	}()
 
 	// TODO: Save this in App struct
-	// TODO: Make dynamic, pull from env var?
-	conn, err := rlbot.Connect("127.0.0.1:23234")
+	conn, err := rlbot.Connect(a.rlbot_address)
 	if err != nil {
-		return "", errors.New("Couldn't connect to RLBotServer")
+		return "", errors.New("Failed to connect to RLBotServer at " + a.rlbot_address)
 	}
 
 	var launcher flat.Launcher
