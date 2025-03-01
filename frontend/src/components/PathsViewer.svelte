@@ -105,6 +105,7 @@
 <Modal title="Manage Paths" bind:visible={visible} minWidth="70vw" minHeight="50vh">
     <div class="paths">
         <div class="button-row">
+            <!-- TODO: this class is not needed -->
             <button class="full-width" onclick={addFolder}>Add folder</button>
             <button class="full-width" onclick={openAddBotpackModal}>Add Botpack</button>
             <button class="full-width" onclick={alert.bind(null, "TODO: not implemented yet")}>Add File</button>
