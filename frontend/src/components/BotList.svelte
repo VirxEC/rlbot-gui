@@ -9,6 +9,7 @@ import {
 } from "svelte-dnd-action";
 import { flip } from "svelte/animate";
 import { App, BotInfo } from "../../bindings/gui";
+import infoIcon from "../assets/info_icon.svg";
 import defaultIcon from "../assets/rlbot_mono.png";
 import type { DraggablePlayer } from "../index";
 import Modal from "./Modal.svelte";
@@ -204,7 +205,12 @@ function ShowSelectedBotFiles() {
             <img src={bot.icon || defaultIcon} alt="icon" />
             <p>{bot.displayName}</p>
             {#if bot.player && bot.player instanceof BotInfo}
-                <button class="info-button" onclick={() => handleInfoClick(bot)}>[ i ]</button>
+                <button class="info-button" onclick={() => handleInfoClick(bot)}>
+                    <img src={infoIcon} alt="i">
+                </button>
+            {:else}
+                <!-- Empty div to keep gap consistent with the above case -->
+                <div></div>
             {/if}
         </div>
     {/each}
@@ -295,7 +301,7 @@ function ShowSelectedBotFiles() {
         color: var(--foreground);
         height: 2.25rem;
         padding: 0.2rem;
-        padding-right: 0.6rem;
+        /* padding-right: 0.6rem; */
         gap: 0.5rem;
         border-radius: 0.2rem;
         cursor: pointer;
@@ -305,11 +311,20 @@ function ShowSelectedBotFiles() {
         width: auto;
     }
     .info-button {
-        background: none;
-        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        height: 100%;
+        padding: 0;
         color: var(--foreground);
         cursor: pointer;
         font-size: 1rem;
+    }
+    .info-button img {
+        filter: invert() brightness(90%);
+        height: 100%;
+        width: auto;
     }
     .tags {
         display: flex;
