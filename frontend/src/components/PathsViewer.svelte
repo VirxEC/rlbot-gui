@@ -7,7 +7,6 @@
 
     function removePath(index: number) {
         paths.splice(index, 1);
-        paths = paths;
     }
 </script>
 

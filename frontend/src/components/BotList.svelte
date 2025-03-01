@@ -7,7 +7,7 @@
     } from "svelte-dnd-action";
     import defaultIcon from "../assets/rlbot_mono.png";
     import type { DraggablePlayer } from "../index";
-    let { items = [] }: { items: DraggablePlayer[] } = $props();
+    let { items = [], showHuman = $bindable(true) }: { items: DraggablePlayer[], showHuman: boolean } = $props();
     const flipDurationMs = 100;
 
     let selectedTags: (string | null)[] = $state([null, null]);
@@ -20,11 +20,11 @@
 
     let filteredItems: DraggablePlayer[] = $state([]);
     $effect(() => {
-        filteredItems = filterBots(selectedTag);
+        filteredItems = filterBots(selectedTags, showHuman);
     });
 
-    function filterBots(filterTags: (string | null)[]) {
-        let filtered = [...items];
+    function filterBots(filterTags: (string | null)[], showHuman: boolean) {
+        let filtered = items.slice(1);
 
         if (filterTags[0]) {
             filtered = filtered.filter((bot) => {
@@ -56,6 +56,10 @@
                         return true;
                 }
             });
+        }
+
+        if (showHuman) {
+            filtered = [items[0], ...filtered];
         }
 
         return filtered;

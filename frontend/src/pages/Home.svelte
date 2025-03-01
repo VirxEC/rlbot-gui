@@ -8,7 +8,6 @@
     /** @import * from '../../bindings/gui' */
     import toast from "svelte-5-french-toast";
     import arenaImages from "../arena-images";
-    import closeIcon from "../assets/close.svg";
     import reloadIcon from "../assets/reload.svg";
     import BotList from "../components/BotList.svelte";
     // @ts-ignore
@@ -20,7 +19,6 @@
     import { mapStore } from "../settings";
     import { MAPS_STANDARD } from "../arena-names";
     import PathsViewer from "../components/PathsViewer.svelte";
-    import { alertToScreenReader } from "svelte-dnd-action";
 
     const backgroundImage =
         arenaImages[Math.floor(Math.random() * arenaImages.length)];
@@ -66,6 +64,10 @@
 
     let bluePlayers: DraggablePlayer[] = $state([]);
     let orangePlayers: DraggablePlayer[] = $state([]);
+    let showHuman = $state(true);
+    $effect(() => {
+        showHuman = !(bluePlayers.some((x) => x.tags.includes("human")) || orangePlayers.some((x) => x.tags.includes("human")));
+    });
 
     let mode = $state(localStorage.getItem("MS_MODE") || "Soccer");
     $effect(() => {
@@ -173,7 +175,7 @@
             <div style="flex:1"></div>
             <input type="text" class="botSearch" placeholder="Search..." />
         </header>
-        <BotList items={players} />
+        <BotList bind:showHuman items={players} />
     </div>
 
     <div><Teams bind:bluePlayers bind:orangePlayers /></div>

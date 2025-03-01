@@ -15,7 +15,7 @@
             [name: string]: string[];
         } = {};
         for (let bot of bots) {
-            let fam = bot.family != "" ? bot.family : bot.name;
+            let fam = bot.family !== "" ? bot.family : bot.name;
             if (!families.hasOwnProperty(fam)) {
                 families[fam] = [];
             }
