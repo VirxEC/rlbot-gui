@@ -52,7 +52,7 @@
                     return;
                 }
 
-                paths = [...paths, { installPath: result, repo: null, tagName: null }];
+                paths.push({ installPath: result, repo: null, tagName: null });
             }
         });
     }
@@ -93,7 +93,7 @@
             .then((tagName) => {
                 toast.success("Botpack downloaded successfully!", {id});
 
-                paths = [...paths, { installPath, repo, tagName }];
+                paths.push({ installPath, repo, tagName });
                 closeAddBotpackModal();
             })
             .catch((err) => {
