@@ -1,24 +1,24 @@
 <script lang="ts">
-    import Modal from "./Modal.svelte";
+import Modal from "./Modal.svelte";
 
-    let visible = $state(false);
-    let localLauncher = $state(localStorage.getItem('MS_LAUNCHER') || '');
-    let localLauncherArg = $state(localStorage.getItem('MS_LAUNCHER_ARG') || '');
+let visible = $state(false);
+let localLauncher = $state(localStorage.getItem("MS_LAUNCHER") || "");
+let localLauncherArg = $state(localStorage.getItem("MS_LAUNCHER_ARG") || "");
 
-    function uid() {
-        return Date.now().toString(36) + Math.random().toString(36).substring(2);
-    }
-    let uids = [uid(), uid(), uid(), uid(), uid()];
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).substring(2);
+}
+let uids = [uid(), uid(), uid(), uid(), uid()];
 
-    $effect(() => {
-        if (localLauncher === 'legendary') {
-            localStorage.setItem('MS_LAUNCHER', 'custom');
-            localStorage.setItem('MS_LAUNCHER_ARG', 'legendary');
-        } else {
-            localStorage.setItem('MS_LAUNCHER', localLauncher);
-            localStorage.setItem('MS_LAUNCHER_ARG', localLauncherArg);
-        }
-    });
+$effect(() => {
+  if (localLauncher === "legendary") {
+    localStorage.setItem("MS_LAUNCHER", "custom");
+    localStorage.setItem("MS_LAUNCHER_ARG", "legendary");
+  } else {
+    localStorage.setItem("MS_LAUNCHER", localLauncher);
+    localStorage.setItem("MS_LAUNCHER_ARG", localLauncherArg);
+  }
+});
 </script>
 
 <button onclick={() => { visible = true }}>Launcher Options</button>

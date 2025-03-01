@@ -1,17 +1,17 @@
 :root {
-    --background: #0a0e14;
-    --background-but: #1a1f26;
-    --background-alt: #1a1f26;
-    --background-opp: var(--foreground-alt);
-    --background-opp-alt: var(--foreground);
+  --background: #0a0e14;
+  --background-but: #1a1f26;
+  --background-alt: #1a1f26;
+  --background-opp: var(--foreground-alt);
+  --background-opp-alt: var(--foreground);
 
-    --foreground: white;
-    --foreground-alt: #a3b3cc;
-    --foreground-opp: var(--background-alt);
-    --foreground-opp-alt: var(--background);
+  --foreground: white;
+  --foreground-alt: #a3b3cc;
+  --foreground-opp: var(--background-alt);
+  --foreground-opp-alt: var(--background);
 
-    --black: black;
-    --white: white;
+  --black: black;
+  --white: white;
 }
 
 /* TODO: introduce light mode */
@@ -32,26 +32,25 @@
 } */
 
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 html,
 body,
 main {
-    margin: 0px;
-    padding: 0px;
-    display: flex;
-    width: 100%;
-    height: 100%;
+  margin: 0px;
+  padding: 0px;
+  display: flex;
+  width: 100%;
+  height: 100%;
 }
 
 body {
-    /* color: #333; */
-    background-color: var(--background);
-    color: var(--foreground);
-    font-family:
-        -apple-system, BlinkMacSystemFont, "Inter", Roboto, Oxygen-Sans, Ubuntu,
-        Cantarell, "Helvetica Neue", sans-serif;
+  /* color: #333; */
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", Roboto, Oxygen-Sans,
+    Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
 }
 
 h1,
@@ -61,71 +60,71 @@ h4,
 h5,
 h6,
 p {
-    margin: 0px;
+  margin: 0px;
 }
 
 /* Drag and drop area styling */
 .dropArea {
-    border: solid 1px #80808050;
+  border: solid 1px #80808050;
 }
 
 /* Button styling */
 button {
-    background-color: var(--background-but);
-    color: var(--foreground);
-    border: solid 1px transparent;
-    margin: 0px;
-    padding: 0.5rem;
-    border-radius: 0.25rem;
-    font-size: 1rem;
-    transition: 150ms;
+  background-color: var(--background-but);
+  color: var(--foreground);
+  border: solid 1px transparent;
+  margin: 0px;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 1rem;
+  transition: 150ms;
 }
 button:hover {
-    box-shadow: 0px 0px 8rem 0px rgba(150, 150, 150, 0.25) inset;
+  box-shadow: 0px 0px 8rem 0px rgba(150, 150, 150, 0.25) inset;
 }
 button:active {
-    border: solid 1px var(--foreground-alt);
+  border: solid 1px var(--foreground-alt);
 }
 
 /* Input styling */
 input {
-    background-color: var(--background-but);
-    color: var(--foreground);
-    border: solid 1px var(--foreground-alt);
-    margin: 0px;
-    padding: 0.5rem;
-    border-radius: 0.25rem;
-    font-size: 1rem;
+  background-color: var(--background-but);
+  color: var(--foreground);
+  border: solid 1px var(--foreground-alt);
+  margin: 0px;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 1rem;
 }
 
 /* Dropdown styling */
 .dropdown {
-    position: relative;
-    display: inline-block;
+  position: relative;
+  display: inline-block;
 }
 .dropdown > .dropmenu {
-    display: flex;
-    flex-direction: column;
-    margin-top: 0.25rem;
-    position: absolute;
-    width: max-content;
-    background-color: var(--background-alt);
-    border-radius: 0.2rem;
-    box-shadow: 0px 0px 0.5rem 0px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  margin-top: 0.25rem;
+  position: absolute;
+  width: max-content;
+  background-color: var(--background-alt);
+  border-radius: 0.2rem;
+  box-shadow: 0px 0px 0.5rem 0px rgba(0, 0, 0, 0.7);
 
-    transition: opacity 150ms;
-    opacity: 0;
-    z-index: -999;
+  transition: opacity 150ms;
+  opacity: 0;
+  z-index: -999;
 }
 
 .dropdown > .dropmenu.right {
-    right: 0px;
+  right: 0px;
 }
 .dropdown > .dropmenu.left {
-    left: 0px;
+  left: 0px;
 }
 
 .dropdown:focus-within > .dropmenu {
-    opacity: 1;
-    z-index: 1;
+  opacity: 1;
+  z-index: 1;
 }

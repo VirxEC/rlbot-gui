@@ -1,6 +1,11 @@
-import { mutators } from "./rlmutators"
+import { mutators } from "./rlmutators";
 
-export const gamemodes: { [x: string]: { match: { [x: string]: string }, mutators: { [x: string]: string } } } = {
+export const gamemodes: {
+  [x: string]: {
+    match: { [x: string]: string };
+    mutators: { [x: string]: string };
+  };
+} = {
   "Heatseeker Ricochet": {
     match: {
       game_mode: mutators.game_mode[5],
@@ -147,4 +152,4 @@ export const gamemodes: { [x: string]: { match: { [x: string]: string }, mutator
       ball_weight_option: mutators.ball_weight_option[3],
     },
   },
-}
+};

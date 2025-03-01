@@ -1,19 +1,23 @@
 <script lang="ts">
-    import TeamBotList from "./TeamBotList.svelte";
+import TeamBotList from "./TeamBotList.svelte";
 
-    let {
-        bluePlayers = $bindable(),
-        orangePlayers = $bindable(),
-        selectedTeam = $bindable(null),
-    }: { bluePlayers: any[]; orangePlayers: any[], selectedTeam: 'blue' | 'orange' | null } = $props();
+let {
+  bluePlayers = $bindable(),
+  orangePlayers = $bindable(),
+  selectedTeam = $bindable(null),
+}: {
+  bluePlayers: any[];
+  orangePlayers: any[];
+  selectedTeam: "blue" | "orange" | null;
+} = $props();
 
-    function toggleTeam(team: 'blue' | 'orange') {
-        if (selectedTeam === team) {
-            selectedTeam = null;
-        } else {
-            selectedTeam = team;
-        }
-    }
+function toggleTeam(team: "blue" | "orange") {
+  if (selectedTeam === team) {
+    selectedTeam = null;
+  } else {
+    selectedTeam = team;
+  }
+}
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->

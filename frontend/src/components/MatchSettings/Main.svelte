@@ -1,77 +1,79 @@
 <script lang="ts">
-    import Select from "../NiceSelect.svelte";
-    import Modal from "../Modal.svelte";
-    import { MAPS_NON_STANDARD, MAPS_STANDARD } from "../../arena-names";
-    import { mutators as mutatorOptions } from "./rlmutators";
-    import LauncherSelector from "../LauncherSelector.svelte";
-    import { gamemodes } from "./rlmodes";
+import Select from "../NiceSelect.svelte";
+import Modal from "../Modal.svelte";
+import { MAPS_NON_STANDARD, MAPS_STANDARD } from "../../arena-names";
+import { mutators as mutatorOptions } from "./rlmutators";
+import LauncherSelector from "../LauncherSelector.svelte";
+import { gamemodes } from "./rlmodes";
 
-    let {
-        map = $bindable(),
-        mode = $bindable(),
-        extraOptions = $bindable(),
-        mutators = $bindable(),
-        onStart = (randomizeMap: boolean) => {},
-        onStop = () => {},
-    } = $props();
-    let showExtraOptions = $state(false);
-    let showMutators = $state(false);
-    let randomizeMap = $state(localStorage.getItem("MS_RANDOMIZE_MAP") === "true");
-    $effect(() => {
-        localStorage.setItem("MS_RANDOMIZE_MAP", randomizeMap.toString());
-    });
+let {
+  map = $bindable(),
+  mode = $bindable(),
+  extraOptions = $bindable(),
+  mutators = $bindable(),
+  onStart = (randomizeMap: boolean) => {},
+  onStop = () => {},
+} = $props();
+let showExtraOptions = $state(false);
+let showMutators = $state(false);
+let randomizeMap = $state(localStorage.getItem("MS_RANDOMIZE_MAP") === "true");
+$effect(() => {
+  localStorage.setItem("MS_RANDOMIZE_MAP", randomizeMap.toString());
+});
 
-    const existingMatchBehaviors: { [n: string]: number } = {
-        "Restart if different": 0,
-        Restart: 1,
-        "Continue and spawn": 2,
-    };
+const existingMatchBehaviors: { [n: string]: number } = {
+  "Restart if different": 0,
+  Restart: 1,
+  "Continue and spawn": 2,
+};
 
-    function cleanCase(toClean: string) {
-        let halfClean = toClean.replaceAll("_", " ").replace(" option", "")
-        return halfClean.charAt(0).toUpperCase() + halfClean.slice(1);
+function cleanCase(toClean: string) {
+  let halfClean = toClean.replaceAll("_", " ").replace(" option", "");
+  return halfClean.charAt(0).toUpperCase() + halfClean.slice(1);
+}
+
+function resetMutators() {
+  for (let key of Object.keys(mutators)) {
+    mutators[key] = 0;
+  }
+}
+
+function setPreset(preset: string) {
+  if (preset === "") {
+    mode = mutatorOptions.game_mode[0];
+    map = MAPS_STANDARD["DFH Stadium"];
+    randomizeMap = true;
+    resetMutators();
+    return;
+  }
+
+  const presetData = gamemodes[preset];
+  if (!presetData) return;
+
+  if (presetData.match.game_mode !== undefined) {
+    mode = presetData.match.game_mode;
+  }
+
+  if (presetData.match.game_map_upk !== undefined) {
+    map = presetData.match.game_map_upk;
+    randomizeMap = false;
+  } else {
+    randomizeMap = true;
+  }
+
+  for (let key of filteredMutatorOptions) {
+    if (presetData.mutators[key] !== undefined) {
+      mutators[key] = mutatorOptions[key].indexOf(presetData.mutators[key]);
+    } else {
+      mutators[key] = 0;
     }
+  }
+}
 
-    function resetMutators() {
-        for (let key of Object.keys(mutators)) {
-            mutators[key] = 0;
-        }
-    }
-
-    function setPreset(preset: string) {
-        if (preset === "") {
-            mode = mutatorOptions.game_mode[0];
-            map = MAPS_STANDARD["DFH Stadium"];
-            randomizeMap = true;
-            resetMutators();
-            return;
-        }
-
-        const presetData = gamemodes[preset];
-        if (!presetData) return;
-
-        if (presetData.match.game_mode !== undefined) {
-            mode = presetData.match.game_mode;
-        }
-
-        if (presetData.match.game_map_upk !== undefined) {
-            map = presetData.match.game_map_upk;
-            randomizeMap = false;
-        } else {
-            randomizeMap = true;
-        }
-
-        for (let key of filteredMutatorOptions) {
-            if (presetData.mutators[key] !== undefined) {
-                mutators[key] = mutatorOptions[key].indexOf(presetData.mutators[key]);
-            } else {
-                mutators[key] = 0;
-            }
-        }
-    }
-
-    const ALL_MAPS = {...MAPS_STANDARD, ...MAPS_NON_STANDARD};
-    const filteredMutatorOptions = Object.keys(mutatorOptions).filter((key) => key !== 'game_mode');
+const ALL_MAPS = { ...MAPS_STANDARD, ...MAPS_NON_STANDARD };
+const filteredMutatorOptions = Object.keys(mutatorOptions).filter(
+  (key) => key !== "game_mode",
+);
 </script>
 
 <div class="matchSettings">

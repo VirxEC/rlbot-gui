@@ -1,168 +1,179 @@
 <script lang="ts">
+// @ts-ignore
+import {
+  App,
+  BotInfo,
+  type StartMatchOptions,
+} from "../../bindings/gui/index.js";
+/** @import * from '../../bindings/gui' */
+import toast from "svelte-5-french-toast";
+import arenaImages from "../arena-images";
+import reloadIcon from "../assets/reload.svg";
+import BotList from "../components/BotList.svelte";
+// @ts-ignore
+import Teams from "../components/Teams/Main.svelte";
+// @ts-ignore
+import MatchSettings from "../components/MatchSettings/Main.svelte";
+import { type DraggablePlayer, draggablePlayerToPlayerJs } from "../index";
+import { BASE_PLAYERS } from "../base-players";
+import { mapStore } from "../settings";
+import { MAPS_STANDARD } from "../arena-names";
+import PathsViewer from "../components/PathsViewer.svelte";
+
+const backgroundImage =
+  arenaImages[Math.floor(Math.random() * arenaImages.length)];
+
+let paths: {
+  tagName: string | null;
+  repo: string | null;
+  installPath: string;
+}[] = $state(
+  JSON.parse(window.localStorage.getItem("BOT_SEARCH_PATHS") || "[]"),
+);
+
+let players: DraggablePlayer[] = $state([...BASE_PLAYERS]);
+let selectedTeam = $state(null);
+
+let loadingPlayers = $state(false);
+let latestBotUpdateTime = null;
+let showPathsViewer = $state(false);
+
+async function updateBots() {
+  loadingPlayers = true;
+  let internalUpdateTime = new Date();
+  latestBotUpdateTime = internalUpdateTime;
+  const result = await App.GetBots(paths.map((x) => x.installPath));
+  if (latestBotUpdateTime !== internalUpdateTime) {
+    return; // if newer "search" already started, dont write old data
+  }
+  players = result.map((x: BotInfo) => {
     // @ts-ignore
-    import {
-        App,
-        BotInfo,
-        type StartMatchOptions,
-    } from "../../bindings/gui/index.js";
-    /** @import * from '../../bindings/gui' */
-    import toast from "svelte-5-french-toast";
-    import arenaImages from "../arena-images";
-    import reloadIcon from "../assets/reload.svg";
-    import BotList from "../components/BotList.svelte";
-    // @ts-ignore
-    import Teams from "../components/Teams/Main.svelte";
-    // @ts-ignore
-    import MatchSettings from "../components/MatchSettings/Main.svelte";
-    import { type DraggablePlayer, draggablePlayerToPlayerJs } from "../index";
-    import { BASE_PLAYERS } from "../base-players";
-    import { mapStore } from "../settings";
-    import { MAPS_STANDARD } from "../arena-names";
-    import PathsViewer from "../components/PathsViewer.svelte";
+    const n: typeof DraggablePlayer = {
+      displayName: x.config.settings.name,
+      icon: x.config.settings.logoFile,
+      player: new BotInfo(x),
+      id: Math.random(),
+      tags: x.config.details.tags,
+    };
+    return n;
+  });
+  players = [...BASE_PLAYERS, ...players];
+  loadingPlayers = false;
+  console.log("Loaded bots:", result);
+}
 
-    const backgroundImage =
-        arenaImages[Math.floor(Math.random() * arenaImages.length)];
+$effect(() => {
+  window.localStorage.setItem("BOT_SEARCH_PATHS", JSON.stringify(paths));
+  updateBots();
+});
 
-    let paths: { tagName: string | null, repo: string | null, installPath: string }[] = $state(
-        JSON.parse(window.localStorage.getItem("BOT_SEARCH_PATHS") || "[]"),
-    );
+let bluePlayers: DraggablePlayer[] = $state([]);
+let orangePlayers: DraggablePlayer[] = $state([]);
+let showHuman = $state(true);
+$effect(() => {
+  showHuman = !(
+    bluePlayers.some((x) => x.tags.includes("human")) ||
+    orangePlayers.some((x) => x.tags.includes("human"))
+  );
+});
 
-    let players: DraggablePlayer[] = $state([...BASE_PLAYERS]);
-    let selectedTeam = $state(null);
+let mode = $state(localStorage.getItem("MS_MODE") || "Soccer");
+$effect(() => {
+  localStorage.setItem("MS_MODE", mode);
+});
+let extraOptions = $state(
+  JSON.parse(
+    localStorage.getItem("MS_EXTRAOPTIONS") ||
+      '{"enableStateSetting": true, "existingMatchBehavior": 1}',
+  ),
+);
+$effect(() => {
+  localStorage.setItem("MS_EXTRAOPTIONS", JSON.stringify(extraOptions));
+});
+let mutatorSettings = $state(
+  JSON.parse(localStorage.getItem("MS_MUTATORS") || "{}"),
+);
+$effect(() => {
+  localStorage.setItem("MS_MUTATORS", JSON.stringify(mutatorSettings));
+});
 
-    let loadingPlayers = $state(false);
-    let latestBotUpdateTime = null;
-    let showPathsViewer = $state(false);
-
-    async function updateBots() {
-        loadingPlayers = true;
-        let internalUpdateTime = new Date();
-        latestBotUpdateTime = internalUpdateTime;
-        const result = await App.GetBots(paths.map((x) => x.installPath));
-        if (latestBotUpdateTime !== internalUpdateTime) {
-            return; // if newer "search" already started, dont write old data
-        }
-        players = result.map((x: BotInfo) => {
-            // @ts-ignore
-            const n: typeof DraggablePlayer = {
-                displayName: x.config.settings.name,
-                icon: x.config.settings.logoFile,
-                player: new BotInfo(x),
-                id: Math.random(),
-                tags: x.config.details.tags,
-            };
-            return n;
-        });
-        players = [...BASE_PLAYERS, ...players];
-        loadingPlayers = false;
-        console.log("Loaded bots:", result);
-    }
-
-    $effect(() => {
-        window.localStorage.setItem("BOT_SEARCH_PATHS", JSON.stringify(paths));
-        updateBots();
+async function onMatchStart(randomizeMap: boolean) {
+  let launcher = localStorage.getItem("MS_LAUNCHER");
+  if (!launcher) {
+    toast.error("Please select a launcher first", {
+      position: "bottom-right",
+      duration: 5000,
     });
+    return;
+  }
 
-    let bluePlayers: DraggablePlayer[] = $state([]);
-    let orangePlayers: DraggablePlayer[] = $state([]);
-    let showHuman = $state(true);
-    $effect(() => {
-        showHuman = !(bluePlayers.some((x) => x.tags.includes("human")) || orangePlayers.some((x) => x.tags.includes("human")));
+  if (randomizeMap) {
+    $mapStore =
+      Object.values(MAPS_STANDARD)[
+        Math.floor(Math.random() * Object.keys(MAPS_STANDARD).length)
+      ];
+  }
+
+  let options: StartMatchOptions = {
+    map: $mapStore,
+    gameMode: mode,
+    bluePlayers: bluePlayers.map((x: DraggablePlayer) => {
+      // @ts-ignore
+      return draggablePlayerToPlayerJs(x);
+    }),
+    orangePlayers: orangePlayers.map((x: DraggablePlayer) => {
+      // @ts-ignore
+      return draggablePlayerToPlayerJs(x);
+    }),
+    launcher,
+    launcherArg: localStorage.getItem("MS_LAUNCHER_ARG") || "",
+    mutatorSettings,
+    extraOptions,
+  };
+
+  toast("Starting match...", {
+    position: "bottom-right",
+  });
+
+  let response = await App.StartMatch(options);
+
+  if (response.success) {
+    toast.success("Sent start match command", {
+      position: "bottom-right",
+      duration: 5000,
     });
-
-    let mode = $state(localStorage.getItem("MS_MODE") || "Soccer");
-    $effect(() => {
-        localStorage.setItem("MS_MODE", mode);
+  } else {
+    toast.error(`Match start failed\n${response.message}`, {
+      position: "bottom-right",
+      duration: 5000,
     });
-    let extraOptions = $state(
-        JSON.parse(localStorage.getItem("MS_EXTRAOPTIONS") || '{"enableStateSetting": true, "existingMatchBehavior": 1}'),
-    );
-    $effect(() => {
-        localStorage.setItem("MS_EXTRAOPTIONS", JSON.stringify(extraOptions));
+  }
+}
+
+async function onMatchStop() {
+  toast("Stopping match...", {
+    position: "bottom-right",
+  });
+  let response = await App.StopMatch(false);
+
+  if (response.success) {
+    toast.success("Sent stop match command", {
+      position: "bottom-right",
+      duration: 5000,
     });
-    let mutatorSettings = $state(
-        JSON.parse(localStorage.getItem("MS_MUTATORS") || "{}"),
-    );
-    $effect(() => {
-        localStorage.setItem("MS_MUTATORS", JSON.stringify(mutatorSettings));
+  } else {
+    toast.error(`Match stop failed\n${response.message}`, {
+      position: "bottom-right",
+      duration: 5000,
     });
+  }
+}
 
-    async function onMatchStart(randomizeMap: boolean) {
-        let launcher = localStorage.getItem("MS_LAUNCHER");
-        if (!launcher) {
-            toast.error("Please select a launcher first", {
-                position: "bottom-right",
-                duration: 5000,
-            });
-            return;
-        }
+let searchQuery = $state("");
 
-        if (randomizeMap) {
-            $mapStore = Object.values(MAPS_STANDARD)[
-                Math.floor(Math.random() * Object.keys(MAPS_STANDARD).length)
-            ];
-        }
-
-        let options: StartMatchOptions = {
-            map: $mapStore,
-            gameMode: mode,
-            bluePlayers: bluePlayers.map((x: DraggablePlayer) => {
-                // @ts-ignore
-                return draggablePlayerToPlayerJs(x);
-            }),
-            orangePlayers: orangePlayers.map((x: DraggablePlayer) => {
-                // @ts-ignore
-                return draggablePlayerToPlayerJs(x);
-            }),
-            launcher,
-            launcherArg: localStorage.getItem("MS_LAUNCHER_ARG") || '',
-            mutatorSettings,
-            extraOptions,
-        };
-
-        toast("Starting match...", {
-            position: "bottom-right",
-        });
-
-        let response = await App.StartMatch(options);
-
-        if (response.success) {
-            toast.success("Sent start match command", {
-                position: "bottom-right",
-                duration: 5000,
-            });
-        } else {
-            toast.error(`Match start failed\n${response.message}`, {
-                position: "bottom-right",
-                duration: 5000,
-            });
-        }
-    }
-
-    async function onMatchStop() {
-        toast("Stopping match...", {
-            position: "bottom-right",
-        });
-        let response = await App.StopMatch(false);
-
-        if (response.success) {
-            toast.success("Sent stop match command", {
-                position: "bottom-right",
-                duration: 5000,
-            });
-        } else {
-            toast.error(`Match stop failed\n${response.message}`, {
-                position: "bottom-right",
-                duration: 5000,
-            });
-        }
-    }
-
-    let searchQuery = $state("");
-
-    function handleSearch(event: Event) {
-        searchQuery = (event.target as HTMLInputElement).value;
-    }
+function handleSearch(event: Event) {
+  searchQuery = (event.target as HTMLInputElement).value;
+}
 </script>
 
 <div class="page" style={`background-image: url("${backgroundImage}")`}>

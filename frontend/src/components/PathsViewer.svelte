@@ -1,105 +1,112 @@
 <script lang="ts">
-    import { App } from "../../bindings/gui";
-    import Modal from "./Modal.svelte";
-    import closeIcon from "../assets/close.svg";
-    import toast from "svelte-5-french-toast";
+import { App } from "../../bindings/gui";
+import Modal from "./Modal.svelte";
+import closeIcon from "../assets/close.svg";
+import toast from "svelte-5-french-toast";
 
-    const OFFICIAL_BOTPACK_REPO = "VirxEC/botpack-test";
+const OFFICIAL_BOTPACK_REPO = "VirxEC/botpack-test";
 
-    let {
-        visible = $bindable(false),
-        paths = $bindable([])
-    }: {
-        visible?: boolean,
-        paths?: { tagName: string | null, repo: string | null, installPath: string }[]
-    } = $props();
+let {
+  visible = $bindable(false),
+  paths = $bindable([]),
+}: {
+  visible?: boolean;
+  paths?: {
+    tagName: string | null;
+    repo: string | null;
+    installPath: string;
+  }[];
+} = $props();
 
-    let addBotpackVisible = $state(false);
-    let selectedBotpackType = $state("official");
-    let customRepo = $state("");
-    let installPath = $state("");
+let addBotpackVisible = $state(false);
+let selectedBotpackType = $state("official");
+let customRepo = $state("");
+let installPath = $state("");
 
-    function setDefaultPath() {
-        App.GetDefaultPath().then((result) => {
-            installPath = result + "/RLBotPack";
-        });
+function setDefaultPath() {
+  App.GetDefaultPath().then((result) => {
+    installPath = result + "/RLBotPack";
+  });
+}
+
+setDefaultPath();
+
+function removePath(index: number) {
+  paths.splice(index, 1);
+}
+
+function openAddBotpackModal() {
+  visible = false;
+  addBotpackVisible = true;
+}
+
+function closeAddBotpackModal() {
+  addBotpackVisible = false;
+  visible = true;
+  selectedBotpackType = "official";
+  customRepo = "";
+  setDefaultPath();
+}
+
+function addFolder() {
+  App.PickFolder().then((result) => {
+    if (result) {
+      if (paths.some((x) => x.installPath === installPath)) {
+        toast.error("Path already added");
+        return;
+      }
+
+      paths.push({ installPath: result, repo: null, tagName: null });
+    }
+  });
+}
+
+function confirmAddBotpack() {
+  if (!installPath) {
+    toast.error("Install path cannot be blank");
+    return;
+  }
+
+  let repo = OFFICIAL_BOTPACK_REPO;
+  if (selectedBotpackType === "custom") {
+    if (!customRepo) {
+      toast.error("URL cannot be blank");
+      return;
     }
 
-    setDefaultPath();
-
-    function removePath(index: number) {
-        paths.splice(index, 1);
+    if (!/^[\w-]+\/[\w-]+$/.test(customRepo)) {
+      toast.error("Custom repository must be in the format 'owner/repo'");
+      return;
     }
 
-    function openAddBotpackModal() {
-        visible = false;
-        addBotpackVisible = true;
-    }
+    repo = customRepo;
+  }
 
-    function closeAddBotpackModal() {
-        addBotpackVisible = false;
-        visible = true;
-        selectedBotpackType = "official";
-        customRepo = "";
-        setDefaultPath();
-    }
+  if (paths.some((x) => x.repo === repo)) {
+    toast.error("Botpack already added");
+    return;
+  }
 
-    function addFolder() {
-        App.PickFolder().then((result) => {
-            if (result) {
-                if (paths.some((x) => x.installPath === installPath)) {
-                    toast.error("Path already added");
-                    return;
-                }
+  if (paths.some((x) => x.installPath === installPath)) {
+    toast.error("Install path already in use");
+    return;
+  }
 
-                paths.push({ installPath: result, repo: null, tagName: null });
-            }
-        });
-    }
+  const id = toast.loading("Downloading botpack...");
+  App.DownloadBotpack(repo, installPath)
+    .then((tagName) => {
+      toast.success("Botpack downloaded successfully!", { id });
 
-    function confirmAddBotpack() {
-        if (!installPath) {
-            toast.error("Install path cannot be blank");
-            return;
-        }
-    
-        let repo = OFFICIAL_BOTPACK_REPO;
-        if (selectedBotpackType === "custom") {
-            if (!customRepo) {
-                toast.error("URL cannot be blank");
-                return;
-            }
-
-            if (!/^[\w-]+\/[\w-]+$/.test(customRepo)) {
-                toast.error("Custom repository must be in the format 'owner/repo'");
-                return;
-            }
-
-            repo = customRepo;
-        }
-
-        if (paths.some((x) => x.repo === repo)) {
-            toast.error("Botpack already added");
-            return;
-        }
-
-        if (paths.some((x) => x.installPath === installPath)) {
-            toast.error("Install path already in use");
-            return;
-        }
-
-        const id = toast.loading("Downloading botpack...");
-        App.DownloadBotpack(repo, installPath)
-            .then((tagName) => {
-                toast.success("Botpack downloaded successfully!", {id});
-
-                paths.push({ installPath, repo, tagName });
-                closeAddBotpackModal();
-            })
-            .catch((err) => {
-                toast.error("Failed to download botpack: " + err, {duration: 10000, id});
-            });
-    }
+      paths.push({ installPath, repo, tagName });
+      closeAddBotpackModal();
+    })
+    .catch((err) => {
+      toast.error("Failed to download botpack: " + err, {
+        duration: 10000,
+        id,
+      });
+    });
+}
 </script>
 
 <Modal title="Manage Paths" bind:visible={visible} minWidth="70vw" minHeight="50vh">

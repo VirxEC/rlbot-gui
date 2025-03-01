@@ -1,26 +1,25 @@
 <script lang="ts">
-    import close from "../assets/close.svg";
-    let {
-        title = "Modal",
-        visible = $bindable(true),
-        children,
-        minWidth = "20vw",
-        minHeight = "20vh"
-    } = $props();
+import close from "../assets/close.svg";
+let {
+  title = "Modal",
+  visible = $bindable(true),
+  children,
+  minWidth = "20vw",
+  minHeight = "20vh",
+} = $props();
 
-    let wrap: EventTarget;
+let wrap: EventTarget;
 
-    let mouseDownWasOutside = false;
+let mouseDownWasOutside = false;
 
-    function handleOuter(e: MouseEvent) {
-        if (e.target === wrap && mouseDownWasOutside)
-            visible = false;
-    }
-    function handleMouseDown(e: MouseEvent) {
-        let res = e.target === wrap;
-        mouseDownWasOutside = res
-        return res;
-    }
+function handleOuter(e: MouseEvent) {
+  if (e.target === wrap && mouseDownWasOutside) visible = false;
+}
+function handleMouseDown(e: MouseEvent) {
+  let res = e.target === wrap;
+  mouseDownWasOutside = res;
+  return res;
+}
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->

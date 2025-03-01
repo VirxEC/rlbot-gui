@@ -1,161 +1,173 @@
 <script lang="ts">
-    import { flip } from "svelte/animate";
-    import {
-        dndzone,
-        TRIGGERS,
-        SHADOW_ITEM_MARKER_PROPERTY_NAME,
-        alertToScreenReader,
-    } from "svelte-dnd-action";
-    import defaultIcon from "../assets/rlbot_mono.png";
-    import type { DraggablePlayer } from "../index";
-    import { App, BotInfo } from "../../bindings/gui";
-    import Modal from "./Modal.svelte";
-    import { Browser } from "@wailsio/runtime";
-    import toast from "svelte-5-french-toast";
+import { flip } from "svelte/animate";
+import {
+  dndzone,
+  TRIGGERS,
+  SHADOW_ITEM_MARKER_PROPERTY_NAME,
+  alertToScreenReader,
+} from "svelte-dnd-action";
+import defaultIcon from "../assets/rlbot_mono.png";
+import type { DraggablePlayer } from "../index";
+import { App, BotInfo } from "../../bindings/gui";
+import Modal from "./Modal.svelte";
+import { Browser } from "@wailsio/runtime";
+import toast from "svelte-5-french-toast";
 
-    let {
-        items = [],
-        showHuman = $bindable(true),
-        searchQuery = "",
-        selectedTeam = null,
-        bluePlayers = $bindable(),
-        orangePlayers = $bindable(),
-    }: {
-        items: DraggablePlayer[],
-        showHuman: boolean,
-        searchQuery: string,
-        selectedTeam: 'blue' | 'orange' | null,
-        bluePlayers: DraggablePlayer[],
-        orangePlayers: DraggablePlayer[],
-    } = $props();
-    const flipDurationMs = 100;
+let {
+  items = [],
+  showHuman = $bindable(true),
+  searchQuery = "",
+  selectedTeam = null,
+  bluePlayers = $bindable(),
+  orangePlayers = $bindable(),
+}: {
+  items: DraggablePlayer[];
+  showHuman: boolean;
+  searchQuery: string;
+  selectedTeam: "blue" | "orange" | null;
+  bluePlayers: DraggablePlayer[];
+  orangePlayers: DraggablePlayer[];
+} = $props();
+const flipDurationMs = 100;
 
-    let selectedTags: (string | null)[] = $state([null, null]);
-    const extraModeTags = ["hoops", "dropshot", "snow-day", "spike-rush", "heatseaker"];
-    const categories = [
-        ["All"],
-        ["Standard", "Extra Modes", "Special bots/scripts"],
-        ["Bots for 1v1", "Bots with teamplay", "Goalie bots"]
-    ];
+let selectedTags: (string | null)[] = $state([null, null]);
+const extraModeTags = [
+  "hoops",
+  "dropshot",
+  "snow-day",
+  "spike-rush",
+  "heatseaker",
+];
+const categories = [
+  ["All"],
+  ["Standard", "Extra Modes", "Special bots/scripts"],
+  ["Bots for 1v1", "Bots with teamplay", "Goalie bots"],
+];
 
-    let filteredItems: DraggablePlayer[] = $state([]);
-    let showModal = $state(false);
-    let selectedBot: [BotInfo, string, string] | null = $state(null);
+let filteredItems: DraggablePlayer[] = $state([]);
+let showModal = $state(false);
+let selectedBot: [BotInfo, string, string] | null = $state(null);
 
-    $effect(() => {
-        filteredItems = filterBots(selectedTags, showHuman, searchQuery);
+$effect(() => {
+  filteredItems = filterBots(selectedTags, showHuman, searchQuery);
+});
+
+function filterBots(
+  filterTags: (string | null)[],
+  showHuman: boolean,
+  searchQuery: string,
+) {
+  let filtered = items.slice(1);
+
+  if (filterTags[0]) {
+    filtered = filtered.filter((bot) => {
+      switch (filterTags[0]) {
+        case categories[1][0]:
+          return !bot.tags.some((tag) =>
+            [...extraModeTags, "memebot", "human"].includes(tag),
+          );
+        case categories[1][1]:
+          return bot.tags.some((tag) => extraModeTags.includes(tag));
+        case categories[1][2]:
+          return bot.tags.some((tag) => tag === "memebot");
+        default:
+          return true;
+      }
     });
+  }
 
-    function filterBots(filterTags: (string | null)[], showHuman: boolean, searchQuery: string) {
-        let filtered = items.slice(1);
+  if (filterTags[1]) {
+    filtered = filtered.filter((bot) => {
+      switch (filterTags[1]) {
+        case categories[2][0]:
+          return bot.tags.some((tag) => tag === "1v1");
+        case categories[2][1]:
+          return bot.tags.some((tag) => tag === "teamplay");
+        case categories[2][2]:
+          return bot.tags.some((tag) => tag === "goalie");
+        default:
+          return true;
+      }
+    });
+  }
 
-        if (filterTags[0]) {
-            filtered = filtered.filter((bot) => {
-                switch (filterTags[0]) {
-                    case categories[1][0]:
-                        return !bot.tags.some((tag) =>
-                            [...extraModeTags, "memebot", "human"].includes(tag),
-                        );
-                    case categories[1][1]:
-                        return bot.tags.some((tag) => extraModeTags.includes(tag));
-                    case categories[1][2]:
-                        return bot.tags.some((tag) => tag === "memebot");
-                    default:
-                        return true;
-                }
-            });
-        }
+  if (showHuman) {
+    filtered = [items[0], ...filtered];
+  }
 
-        if (filterTags[1]) {
-            filtered = filtered.filter((bot) => {
-                switch (filterTags[1]) {
-                    case categories[2][0]:
-                        return bot.tags.some((tag) => tag === "1v1");
-                    case categories[2][1]:
-                        return bot.tags.some((tag) => tag === "teamplay");
-                    case categories[2][2]:
-                        return bot.tags.some((tag) => tag === "goalie");
-                    default:
-                        return true;
-                }
-            });
-        }
+  if (searchQuery) {
+    filtered = filtered.filter((bot) =>
+      bot.displayName.toLowerCase().includes(searchQuery.toLowerCase()),
+    );
+  }
 
-        if (showHuman) {
-            filtered = [items[0], ...filtered];
-        }
+  return filtered;
+}
 
-        if (searchQuery) {
-            filtered = filtered.filter((bot) =>
-                bot.displayName.toLowerCase().includes(searchQuery.toLowerCase())
-            );
-        }
+function handleTagClick(tag: string, groupIndex: number) {
+  if (groupIndex === 0) {
+    selectedTags = [null, null];
+  } else {
+    selectedTags[groupIndex - 1] =
+      selectedTags[groupIndex - 1] === tag ? null : tag;
+  }
+}
 
-        return filtered;
-    }
+function handleDndConsider(e: any) {
+  const { trigger, id } = e.detail.info;
+  if (trigger === TRIGGERS.DRAG_STARTED) {
+    const newId = `${id}-${Math.round(Math.random() * 100000)}`;
+    const idx = filteredItems.findIndex((item) => item.id === id);
+    e.detail.items = e.detail.items.filter(
+      (item: any) => !item[SHADOW_ITEM_MARKER_PROPERTY_NAME],
+    );
+    e.detail.items.splice(idx, 0, { ...filteredItems[idx], id: newId });
+    filteredItems = e.detail.items;
+  }
+}
+function handleDndFinalize(e: any) {
+  filteredItems = e.detail.items;
+}
 
-    function handleTagClick(tag: string, groupIndex: number) {
-        if (groupIndex === 0) {
-            selectedTags = [null, null];
-        } else {
-            selectedTags[groupIndex-1] = selectedTags[groupIndex-1] === tag ? null : tag;
-        }
-    }
+function handleBotClick(bot: DraggablePlayer) {
+  const newId = `${bot.id}-${Math.round(Math.random() * 100000)}`;
+  const idx = filteredItems.findIndex((item) => item.id === bot.id);
+  //@ts-ignore
+  filteredItems.splice(idx, 1, { ...filteredItems[idx], id: newId });
 
-    function handleDndConsider(e: any) {
-        const { trigger, id } = e.detail.info;
-        if (trigger === TRIGGERS.DRAG_STARTED) {
-            const newId = `${id}-${Math.round(Math.random() * 100000)}`;
-            const idx = filteredItems.findIndex((item) => item.id === id);
-            e.detail.items = e.detail.items.filter(
-                (item: any) => !item[SHADOW_ITEM_MARKER_PROPERTY_NAME],
-            );
-            e.detail.items.splice(idx, 0, { ...filteredItems[idx], id: newId });
-            filteredItems = e.detail.items;
-        }
-    }
-    function handleDndFinalize(e: any) {
-        filteredItems = e.detail.items;
-    }
+  if (selectedTeam === "blue") {
+    bluePlayers = [bot, ...bluePlayers];
+  } else if (selectedTeam === "orange") {
+    orangePlayers = [bot, ...orangePlayers];
+  }
+}
 
-    function handleBotClick(bot: DraggablePlayer) {
-        const newId = `${bot.id}-${Math.round(Math.random() * 100000)}`;
-        const idx = filteredItems.findIndex((item) => item.id === bot.id);
-        //@ts-ignore
-        filteredItems.splice(idx, 1, { ...filteredItems[idx], id: newId });
+function handleInfoClick(bot: DraggablePlayer) {
+  if (bot.player instanceof BotInfo) {
+    selectedBot = [bot.player, bot.displayName, bot.icon];
+    showModal = true;
+  }
+}
 
-        if (selectedTeam === "blue") {
-            bluePlayers = [bot, ...bluePlayers];
-        } else if (selectedTeam === "orange") {
-            orangePlayers = [bot, ...orangePlayers];
-        }
-    }
+function OpenSelectedBotSource() {
+  if (selectedBot) {
+    Browser.OpenURL(selectedBot[0].config.details.sourceLink);
+  }
+}
 
-    function handleInfoClick(bot: DraggablePlayer) {
-        if (bot.player instanceof BotInfo) {
-            selectedBot = [bot.player, bot.displayName, bot.icon];
-            showModal = true;
-        }
-    }
+function EditSelectedBotAppearance() {
+  if (selectedBot) {
+    alert.bind(null, "Not implemented yet")();
+  }
+}
 
-    function OpenSelectedBotSource() {
-        if (selectedBot) {
-            Browser.OpenURL(selectedBot[0].config.details.sourceLink);
-        }
-    }
-
-    function EditSelectedBotAppearance() {
-        if (selectedBot) {
-            alert.bind(null, "Not implemented yet")();
-        }
-    }
-
-    function ShowSelectedBotFiles() {
-        if (selectedBot) {
-            App.ShowPathInExplorer(selectedBot[0].tomlPath)
-                .catch((err) => toast.error(err, {duration: 10000}));
-        }
-    }
+function ShowSelectedBotFiles() {
+  if (selectedBot) {
+    App.ShowPathInExplorer(selectedBot[0].tomlPath).catch((err) =>
+      toast.error(err, { duration: 10000 }),
+    );
+  }
+}
 </script>
 
 <div class="tag-buttons">

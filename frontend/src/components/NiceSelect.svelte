@@ -1,10 +1,10 @@
 <script lang="ts">
-    let {
-        value = $bindable(),
-        options = $bindable(),
-        placeholder = $bindable(),
-    } = $props();
-    let options_entries = $derived(Object.entries(options));
+let {
+  value = $bindable(),
+  options = $bindable(),
+  placeholder = $bindable(),
+} = $props();
+let options_entries = $derived(Object.entries(options));
 </script>
 
 <label class="select" for="slct">

@@ -54,13 +54,7 @@ export const mutators: { [x: string]: string[] } = {
     "Magnus FutBall",
   ],
   ball_size_option: ["Default", "Small", "Medium", "Large", "Gigantic"],
-  ball_bounciness_option: [
-    "Default",
-    "Low",
-    "High",
-    "Super High",
-    "Lowish",
-  ],
+  ball_bounciness_option: ["Default", "Low", "High", "Super High", "Lowish"],
   boost_amount_option: [
     "Default",
     "Unlimited",

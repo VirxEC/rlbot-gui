@@ -1,10 +1,10 @@
 <script lang="ts">
-    import Home from "./pages/Home.svelte";
-    import RocketHost from "./pages/RocketHost.svelte";
-    import logo from "./assets/rlbot_logo.svg";
-    import { Toaster } from "svelte-5-french-toast";
+import Home from "./pages/Home.svelte";
+import RocketHost from "./pages/RocketHost.svelte";
+import logo from "./assets/rlbot_logo.svg";
+import { Toaster } from "svelte-5-french-toast";
 
-    let activePage = $state("home");
+let activePage = $state("home");
 </script>
 
 <Toaster />
