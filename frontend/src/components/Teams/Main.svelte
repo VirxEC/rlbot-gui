@@ -68,8 +68,10 @@
         display: flex;
         color: white;
     }
-    header.blue {
+    header {
         border: 2px solid;
+    }
+    header.blue {
         border-color: #0054a6;
         background-color: #0054a6;
     }
