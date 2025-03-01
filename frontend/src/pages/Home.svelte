@@ -178,7 +178,7 @@
         <BotList bind:showHuman items={players} />
     </div>
 
-    <div><Teams bind:bluePlayers bind:orangePlayers /></div>
+    <div class="teams"><Teams bind:bluePlayers bind:orangePlayers /></div>
 
     <div class="box">
         <MatchSettings
@@ -221,6 +221,9 @@
     }
     .availableBots {
         padding-bottom: 0.6rem;
+        flex-grow: 2;
+        display: flex;
+        flex-direction: column;
     }
     .availableBots header {
         display: flex;
@@ -233,5 +236,10 @@
     }
     .reloadButton img {
         filter: invert();
+    }
+    .teams {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
     }
 </style>

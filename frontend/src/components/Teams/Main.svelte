@@ -35,6 +35,7 @@
     .teams {
         display: flex;
         gap: 1rem;
+        height: 100%;
     }
     .teams > .team {
         flex: 1;
