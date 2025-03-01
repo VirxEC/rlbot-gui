@@ -17,7 +17,9 @@
             visible = false;
     }
     function handleMouseDown(e: MouseEvent) {
-        return mouseDownWasOutside = e.target === wrap;
+        let res = e.target === wrap;
+        mouseDownWasOutside = res
+        return res;
     }
 </script>
 

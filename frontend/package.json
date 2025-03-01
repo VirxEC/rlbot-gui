@@ -14,9 +14,9 @@
     "svelte-dnd-action": "^0.9.57"
   },
   "devDependencies": {
+    "@biomejs/biome": "1.9.4",
     "@rsbuild/core": "1.0.5",
     "@rsbuild/plugin-svelte": "1.0.5",
-    "oxlint": "^0.13.2",
     "typescript": "^5.8.2"
   }
 }

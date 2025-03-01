@@ -1,3 +1,4 @@
+// biome-ignore format: keep consistent
 export const MAPS_STANDARD = {
   "DFH Stadium": "Stadium_P",
   "Mannfield": "EuroStadium_P",
@@ -49,6 +50,7 @@ export const MAPS_STANDARD = {
   "Drift Woods": "Woods_P",
 };
 
+// biome-ignore format: keep consistent
 export const MAPS_NON_STANDARD = {
   "Badlands": "Wasteland_P",
   "Badlands (Night)": "Wasteland_Night_P",

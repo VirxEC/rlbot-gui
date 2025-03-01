@@ -1,74 +1,74 @@
 <script lang="ts">
-    import toast from "svelte-5-french-toast";
-    import { App, RHostBot, RHostServer } from "../../bindings/gui/index.js";
-    import { MAPS_STANDARD } from "../arena-names";
-    import closeIcon from "../assets/close.svg";
-    import Plus from "../assets/plus.svg.svelte";
-    import LauncherSelector from "../components/LauncherSelector.svelte";
-    import { mapStore } from "../settings";
+import toast from "svelte-5-french-toast";
+import { App, RHostBot, RHostServer } from "../../bindings/gui/index.js";
+import { MAPS_STANDARD } from "../arena-names";
+import closeIcon from "../assets/close.svg";
+import Plus from "../assets/plus.svg.svelte";
+import LauncherSelector from "../components/LauncherSelector.svelte";
+import { mapStore } from "../settings";
 
-    let waiting = $state(false);
+let waiting = $state(false);
 
-    let bots: RHostBot[] = $state([]);
-    let botFamilies = $derived.by(() => {
-        let families: {
-            [name: string]: string[];
-        } = {};
-        for (let bot of bots) {
-            let fam = bot.family !== "" ? bot.family : bot.name;
-            if (!families.hasOwnProperty(fam)) {
-                families[fam] = [];
-            }
-            families[fam].push(bot.name);
-        }
-        return families;
-    });
-
-    function refreshRHostBots() {
-        App.GetRHostBots()
-            .then((result) => {
-                bots = result;
-            })
-            .catch((error) => {
-                toast.error(`Couldn't resolve Rocket Host bots\n${error}`, {
-                    position: "bottom-right",
-                    duration: 5000,
-                });
-            });
+let bots: RHostBot[] = $state([]);
+let botFamilies = $derived.by(() => {
+  let families: {
+    [name: string]: string[];
+  } = {};
+  for (let bot of bots) {
+    let fam = bot.family !== "" ? bot.family : bot.name;
+    if (!Object.hasOwn(families, fam)) {
+      families[fam] = [];
     }
-    refreshRHostBots();
+    families[fam].push(bot.name);
+  }
+  return families;
+});
 
-    let serverAddr: string = $state(localStorage.getItem("RHOST_SERVER_ADDR") || "");
-    $effect(() => {
-        localStorage.setItem("RHOST_SERVER_ADDR", serverAddr);
+function refreshRHostBots() {
+  App.GetRHostBots()
+    .then((result) => {
+      bots = result;
+    })
+    .catch((error) => {
+      toast.error(`Couldn't resolve Rocket Host bots\n${error}`, {
+        position: "bottom-right",
+        duration: 5000,
+      });
     });
+}
+refreshRHostBots();
 
-    let servers: RHostServer[] = $state([]);
-    $effect(() => {
-        if (servers.length > 0) {
-            serverAddr = serverAddr === "" ? `${servers[0].ip}:${servers[0].port}` : serverAddr;
-        }
+let serverAddr: string = $state(
+  localStorage.getItem("RHOST_SERVER_ADDR") || "",
+);
+$effect(() => {
+  localStorage.setItem("RHOST_SERVER_ADDR", serverAddr);
+});
+
+let servers: RHostServer[] = $state([]);
+$effect(() => {
+  if (servers.length > 0) {
+    serverAddr =
+      serverAddr === "" ? `${servers[0].ip}:${servers[0].port}` : serverAddr;
+  }
+});
+
+function refreshRHostServers() {
+  App.GetRHostServers()
+    .then((result) => {
+      servers = result;
+    })
+    .catch((error) => {
+      toast.error(`Couldn't resolve Rocket Host server addresses\n${error}`, {
+        position: "bottom-right",
+        duration: 5000,
+      });
     });
+}
+refreshRHostServers();
 
-    function refreshRHostServers() {
-        App.GetRHostServers()
-            .then((result) => {
-                servers = result;
-            })
-            .catch((error) => {
-                toast.error(
-                    `Couldn't resolve Rocket Host server addresses\n${error}`,
-                    {
-                        position: "bottom-right",
-                        duration: 5000,
-                    },
-                );
-            });
-    }
-    refreshRHostServers();
-
-    let blueBots: string[] = $state([]);
-    let orangeBots: string[] = $state([]);
+let blueBots: string[] = $state([]);
+let orangeBots: string[] = $state([]);
 </script>
 
 <div class="page">

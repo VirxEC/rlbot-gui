@@ -28,8 +28,8 @@
     };
 
     function cleanCase(toClean: string) {
-        toClean = toClean.replaceAll("_", " ").replace(" option", "")
-        return toClean.charAt(0).toUpperCase() + toClean.slice(1);
+        let halfClean = toClean.replaceAll("_", " ").replace(" option", "")
+        return halfClean.charAt(0).toUpperCase() + halfClean.slice(1);
     }
 
     function resetMutators() {
@@ -50,12 +50,12 @@
         const presetData = gamemodes[preset];
         if (!presetData) return;
 
-        if (presetData.match["game_mode"] !== undefined) {
-            mode = presetData.match["game_mode"];
+        if (presetData.match.game_mode !== undefined) {
+            mode = presetData.match.game_mode;
         }
 
-        if (presetData.match["game_map_upk"] !== undefined) {
-            map = presetData.match["game_map_upk"];
+        if (presetData.match.game_map_upk !== undefined) {
+            map = presetData.match.game_map_upk;
             randomizeMap = false;
         } else {
             randomizeMap = true;

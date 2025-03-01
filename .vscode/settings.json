@@ -1,3 +1,8 @@
 {
-    "oxc.configPath": "./frontend/.oxlintrc.json"
+    "biome.projects": [
+        {
+            "path": "frontend",
+            "configFile": "frontend/biome.json"
+        }
+    ]
 }
