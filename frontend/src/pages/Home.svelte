@@ -28,6 +28,7 @@
     );
 
     let players: DraggablePlayer[] = $state([...BASE_PLAYERS]);
+    let selectedTeam = $state(null);
 
     let loadingPlayers = $state(false);
     let latestBotUpdateTime = null;
@@ -181,10 +182,17 @@
             <div style="flex:1"></div>
             <input type="text" class="botSearch" placeholder="Search..." oninput={handleSearch}/>
         </header>
-        <BotList bind:showHuman items={players} searchQuery={searchQuery} />
+        <BotList
+            bind:bluePlayers
+            bind:orangePlayers
+            bind:showHuman
+            items={players}
+            searchQuery={searchQuery}
+            selectedTeam={selectedTeam}
+        />
     </div>
 
-    <div class="teams"><Teams bind:bluePlayers bind:orangePlayers /></div>
+    <div class="teams"><Teams bind:bluePlayers bind:orangePlayers bind:selectedTeam /></div>
 
     <div class="box">
         <MatchSettings

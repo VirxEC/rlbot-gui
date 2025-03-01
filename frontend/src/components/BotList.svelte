@@ -7,7 +7,21 @@
     } from "svelte-dnd-action";
     import defaultIcon from "../assets/rlbot_mono.png";
     import type { DraggablePlayer } from "../index";
-    let { items = [], showHuman = $bindable(true), searchQuery = "" }: { items: DraggablePlayer[], showHuman: boolean, searchQuery: string } = $props();
+    let {
+        items = [],
+        showHuman = $bindable(true),
+        searchQuery = "",
+        selectedTeam = null,
+        bluePlayers = $bindable(),
+        orangePlayers = $bindable(),
+    }: {
+        items: DraggablePlayer[],
+        showHuman: boolean,
+        searchQuery: string,
+        selectedTeam: 'blue' | 'orange' | null,
+        bluePlayers: DraggablePlayer[],
+        orangePlayers: DraggablePlayer[],
+    } = $props();
     const flipDurationMs = 100;
 
     let selectedTags: (string | null)[] = $state([null, null]);
@@ -84,7 +98,6 @@
         if (trigger === TRIGGERS.DRAG_STARTED) {
             const newId = `${id}-${Math.round(Math.random() * 100000)}`;
             const idx = filteredItems.findIndex((item) => item.id === id);
-            console.log(e.detail.items.filter((item: any) => item[SHADOW_ITEM_MARKER_PROPERTY_NAME]).forEach((item: any) => item.id = newId));
             e.detail.items = e.detail.items.filter(
                 (item: any) => !item[SHADOW_ITEM_MARKER_PROPERTY_NAME],
             );
@@ -94,6 +107,19 @@
     }
     function handleDndFinalize(e: any) {
         filteredItems = e.detail.items;
+    }
+
+    function handleBotClick(bot: DraggablePlayer) {
+        const newId = `${bot.id}-${Math.round(Math.random() * 100000)}`;
+        const idx = filteredItems.findIndex((item) => item.id === bot.id);
+        //@ts-ignore
+        filteredItems.splice(idx, 1, { ...filteredItems[idx], id: newId });
+
+        if (selectedTeam === "blue") {
+            bluePlayers = [bot, ...bluePlayers];
+        } else if (selectedTeam === "orange") {
+            orangePlayers = [bot, ...orangePlayers];
+        }
     }
 </script>
 
@@ -124,8 +150,10 @@
     onconsider={handleDndConsider}
     onfinalize={handleDndFinalize}
 >
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
     {#each filteredItems as bot (bot.id)}
-        <div class="bot" animate:flip={{ duration: flipDurationMs }}>
+        <div class="bot" animate:flip={{ duration: flipDurationMs }} onclick={() => handleBotClick(bot)}>
             <img src={bot.icon || defaultIcon} alt="icon" />
             <p>{bot.displayName}</p>
         </div>
@@ -183,6 +211,7 @@
         padding-right: 0.6rem;
         gap: 0.5rem;
         border-radius: 0.2rem;
+        cursor: pointer;
     }
     .bot img {
         height: 2rem;
