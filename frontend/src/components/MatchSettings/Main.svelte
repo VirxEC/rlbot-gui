@@ -1,10 +1,11 @@
 <script lang="ts">
-import Select from "../NiceSelect.svelte";
-import Modal from "../Modal.svelte";
 import { MAPS_NON_STANDARD, MAPS_STANDARD } from "../../arena-names";
-import { mutators as mutatorOptions } from "./rlmutators";
 import LauncherSelector from "../LauncherSelector.svelte";
-import { gamemodes } from "./rlmodes";
+import Modal from "../Modal.svelte";
+import NiceSelect from "../NiceSelect.svelte";
+import Select from "../NiceSelect.svelte";
+import { type Gamemode, gamemodes } from "./rlmodes";
+import { mutators as mutatorOptions } from "./rlmutators";
 
 let {
   map = $bindable(),
@@ -36,20 +37,18 @@ function resetMutators() {
   for (let key of Object.keys(mutators)) {
     mutators[key] = 0;
   }
+  selectedPreset = "";
 }
 
-function setPreset(preset: string) {
-  if (preset === "") {
-    mode = mutatorOptions.game_mode[0];
-    map = MAPS_STANDARD["DFH Stadium"];
-    randomizeMap = true;
-    resetMutators();
-    return;
+// the reason for default being "" and not null is that NiceSelect considers that the default
+let selectedPreset: Gamemode | "" = $state("");
+$effect(() => {
+  if (selectedPreset !== "") {
+    setPreset(selectedPreset);
   }
+});
 
-  const presetData = gamemodes[preset];
-  if (!presetData) return;
-
+function setPreset(presetData: Gamemode) {
   if (presetData.match.game_mode !== undefined) {
     mode = presetData.match.game_mode;
   }
@@ -136,6 +135,7 @@ const filteredMutatorOptions = Object.keys(mutatorOptions).filter(
                     name={mutatorKey}
                     id={mutatorKey}
                     bind:value={mutators[mutatorKey]}
+                    onchange={() => {selectedPreset = ""}}
                 >
                     {#each mutatorOptions[mutatorKey] as value, i}
                         <option value={i}>{value.replaceAll("_", " ")}</option>
@@ -143,21 +143,10 @@ const filteredMutatorOptions = Object.keys(mutatorOptions).filter(
                 </select>
             </div>
         {/each}
-        <div></div>
-        <div class="mutator">
-            <label for="gamemode"><b>Presets</b></label>
-            <select name="gamemode" id="gamemode" onchange={(e) => {
-                // @ts-ignore
-                setPreset(e.target.value)
-            }}>
-                {#each ["", ...Object.keys(gamemodes)] as gamemode}
-                    <option value={gamemode}>{gamemode}</option>
-                {/each}
-            </select>
-        </div>
     </div>
     <div class="bottomButtons">
         <p>Settings are saved automatically</p>
+        <NiceSelect bind:value={selectedPreset} options={gamemodes} placeholder="Select a preset" />
         <button
             class="mutatorResetButton"
             onclick={resetMutators}>Reset</button
@@ -263,8 +252,13 @@ const filteredMutatorOptions = Object.keys(mutatorOptions).filter(
     .bottomButtons {
         display: flex;
         margin-top: 1rem;
+        gap: 0.5rem;
         justify-content: space-between;
         align-items: center;
+    }
+    .bottomButtons :first-child {
+        flex-grow: 1;
+        margin-right: .5rem;
     }
     .mutatorResetButton {
         background-color: red;

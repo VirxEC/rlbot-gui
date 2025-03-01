@@ -1,10 +1,12 @@
 import { mutators } from "./rlmutators";
 
+export type Gamemode = {
+  match: { [x: string]: string };
+  mutators: { [x: string]: string };
+};
+
 export const gamemodes: {
-  [x: string]: {
-    match: { [x: string]: string };
-    mutators: { [x: string]: string };
-  };
+  [x: string]: Gamemode;
 } = {
   "Heatseeker Ricochet": {
     match: {
