@@ -37,6 +37,7 @@
         <!-- svelte-ignore a11y_click_events_have_key_events -->
         <!-- svelte-ignore a11y_no_static_element_interactions -->
         {#each items as bot (bot.id)}
+            <!-- TODO: maybe remove stopPropagation and instead require a click on the team header -->
             <div class="bot" animate:flip={{ duration: flipDurationMs }} onclick={e => e.stopPropagation()}>
                 <img src={bot?.icon || defaultIcon} alt="icon" />
                 <p>{bot?.displayName}</p>
