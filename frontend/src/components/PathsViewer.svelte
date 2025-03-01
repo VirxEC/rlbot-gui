@@ -4,22 +4,19 @@
     import closeIcon from "../assets/close.svg";
     import toast from "svelte-5-french-toast";
 
-    const GITHUB_URL = "https://github.com/";
-    const OFFICIAL_BOTPACK_URL = GITHUB_URL + "VirxEC/botpack-test";
+    const OFFICIAL_BOTPACK_REPO = "VirxEC/botpack-test";
 
-    let { visible = $bindable(false), paths = $bindable([]) } = $props();
-
-    let botpacks: { url: string, installPath: string }[] = $state(
-        JSON.parse(localStorage.getItem("BOTPACKS") || "[]"),
-    );
-
-    $effect(() => {
-        localStorage.setItem("BOTPACKS", JSON.stringify(botpacks));
-    });
+    let {
+        visible = $bindable(false),
+        paths = $bindable([])
+    }: {
+        visible?: boolean,
+        paths?: { tagName: string | null, repo: string | null, installPath: string }[]
+    } = $props();
 
     let addBotpackVisible = $state(false);
     let selectedBotpackType = $state("official");
-    let customURL = $state("");
+    let customRepo = $state("");
     let installPath = $state("");
 
     function setDefaultPath() {
@@ -34,10 +31,6 @@
         paths.splice(index, 1);
     }
 
-    function removeBotpack(index: number) {
-        botpacks.splice(index, 1);
-    }
-
     function openAddBotpackModal() {
         visible = false;
         addBotpackVisible = true;
@@ -47,14 +40,19 @@
         addBotpackVisible = false;
         visible = true;
         selectedBotpackType = "official";
-        customURL = "";
+        customRepo = "";
         setDefaultPath();
     }
 
     function addFolder() {
         App.PickFolder().then((result) => {
             if (result) {
-                paths = [...paths, result];
+                if (paths.some((x) => x.installPath === installPath)) {
+                    toast.error("Path already added");
+                    return;
+                }
+
+                paths = [...paths, { installPath: result, repo: null, tagName: null }];
             }
         });
     }
@@ -65,41 +63,42 @@
             return;
         }
     
-        let url = OFFICIAL_BOTPACK_URL;
+        let repo = OFFICIAL_BOTPACK_REPO;
         if (selectedBotpackType === "custom") {
-            if (!customURL) {
+            if (!customRepo) {
                 toast.error("URL cannot be blank");
                 return;
             }
 
-            if (!customURL.startsWith("https://github.com/")) {
-                toast.error("Custom URL must start with 'https://github.com/'");
+            if (!/^[\w-]+\/[\w-]+$/.test(customRepo)) {
+                toast.error("Custom repository must be in the format 'owner/repo'");
                 return;
             }
 
-            url = customURL;
+            repo = customRepo;
         }
 
-        if (botpacks.some((x) => x.url === url)) {
+        if (paths.some((x) => x.repo === repo)) {
             toast.error("Botpack already added");
             return;
         }
 
-        if (botpacks.some((x) => x.installPath === installPath)) {
+        if (paths.some((x) => x.installPath === installPath)) {
             toast.error("Install path already in use");
             return;
         }
 
-        App.DownloadBotpack(url, installPath)
-            .then((result) => {
-                if (!result.success) {
-                    toast.error("Failed to download botpack: " + result.message);
-                    return;
-                }
-                    
-                botpacks = [...botpacks, { installPath, url }];
+        const id = toast.loading("Downloading botpack...");
+        App.DownloadBotpack(repo, installPath)
+            .then((tagName) => {
+                toast.success("Botpack downloaded successfully!", {id});
+
+                paths = [...paths, { installPath, repo, tagName }];
                 closeAddBotpackModal();
             })
+            .catch((err) => {
+                toast.error("Failed to download botpack: " + err, {duration: 10000, id});
+            });
     }
 </script>
 
@@ -113,17 +112,8 @@
 
         {#each paths as path, i}
             <div class="path">
-                <pre>{path}</pre>
+                <pre>{path.repo ? `${path.repo} @ ${path.installPath}` : path.installPath}</pre>
                 <button class="close" onclick={() => removePath(i)}>
-                    <img src={closeIcon} alt="X" />
-                </button>
-            </div>
-        {/each}
-
-        {#each botpacks as botpack, i}
-            <div class="path">
-                <pre>{botpack.url} @ {botpack.installPath}</pre>
-                <button class="close" onclick={() => removeBotpack(i)}>
                     <img src={closeIcon} alt="X" />
                 </button>
             </div>
@@ -133,7 +123,7 @@
 
 <Modal title="Add Botpack" bind:visible={addBotpackVisible} minWidth="50vw">
     <div class="add-botpack">
-        <label for="path">Install path</label>
+        <label for="path">Botpack install path</label>
         <input type="text" id="path" placeholder="Enter install path" bind:value={installPath} />
         <div class="radio-group">
             <label>
@@ -146,7 +136,7 @@
             </label>
         </div>
         {#if selectedBotpackType === "custom"}
-            <input type="text" placeholder="https://github.com/owner/repo" bind:value={customURL} />
+            <input type="text" placeholder="https://github.com/owner/repo" bind:value={customRepo} />
         {/if}
         <div class="button-row">
             <button onclick={confirmAddBotpack}>Confirm</button>

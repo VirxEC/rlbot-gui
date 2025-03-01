@@ -1,18 +1,27 @@
 package main
 
 import (
+	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"github.com/ncruces/zenity"
 	rlbot "github.com/swz-git/go-interface"
 	"github.com/swz-git/go-interface/flat"
 )
 
+type RawReleaseInfo struct {
+	repo    string
+	content GhRelease
+}
+
 // App struct
 type App struct {
-	rlbot_address string
+	latest_release_json []RawReleaseInfo
+	rlbot_address       string
 }
 
 func (a *App) IgnoreMe(
@@ -32,8 +41,70 @@ func (a *App) GetDefaultPath() string {
 	return filepath.Join(home, ".rlbotgui")
 }
 
-func (a *App) DownloadBotpack(url string, installPath string) Result {
-	return Result{false, "Not implemented"}
+func (a *App) GetLatestReleaseData(repo string) (*GhRelease, error) {
+	latest_release_url := "https://api.github.com/repos/" + repo + "/releases/latest"
+
+	resp, err := http.Get(latest_release_url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	content, err := ParseReleaseData(body)
+	if err != nil {
+		return nil, err
+	}
+
+	a.latest_release_json = append(a.latest_release_json, RawReleaseInfo{repo, content})
+
+	return &a.latest_release_json[len(a.latest_release_json)-1].content, nil
+}
+
+func (a *App) DownloadBotpack(repo string, installPath string) (string, error) {
+	var latest_release *GhRelease
+
+	for _, release := range a.latest_release_json {
+		if release.repo == repo {
+			latest_release = &release.content
+			break
+		}
+	}
+
+	if latest_release == nil {
+		content, err := a.GetLatestReleaseData(repo)
+		if err != nil {
+			return "", err
+		}
+
+		latest_release = content
+	}
+
+	var file_name string
+	if runtime.GOOS == "windows" {
+		file_name = "botpack_x86_64-windows.tar.xz"
+	} else {
+		file_name = "botpack_x86_64-linux.tar.xz"
+	}
+
+	var download_url string
+	for _, asset := range latest_release.Assets {
+		if asset.Name == file_name {
+			download_url = asset.BrowserDownloadURL
+			break
+		}
+	}
+
+	err := DownloadExtractArchive(download_url, installPath)
+	if err != nil {
+		return "", err
+	}
+
+	return latest_release.TagName, nil
 }
 
 // NewApp creates a new App application struct
@@ -50,26 +121,29 @@ func NewApp() *App {
 
 	rlbot_address := ip + ":" + port
 
+	var latest_release_json []RawReleaseInfo
+
 	return &App{
+		latest_release_json,
 		rlbot_address,
 	}
 }
 
-func recursiveFileSearch(root, pattern string) ([]string, error) {
+func recursiveTomlSearch(root, tomlType string) ([]string, error) {
 	var matches []string
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-		if !info.IsDir() && (info.Name() == "bot.toml" || filepath.Ext(info.Name()) == ".bot.toml") {
-			matched, err := filepath.Match(pattern, info.Name())
-			if err != nil {
-				return err
-			}
-			if matched {
-				matches = append(matches, path)
-			}
+
+		if info.IsDir() || filepath.Ext(info.Name()) != ".toml" {
+			return nil
 		}
+
+		if info.Name() == tomlType+".toml" || strings.HasSuffix(info.Name(), "."+tomlType+".toml") {
+			matches = append(matches, path)
+		}
+
 		return nil
 	})
 	return matches, err
@@ -154,8 +228,6 @@ func (a *App) StartMatch(options StartMatchOptions) Result {
 	for _, playerInfo := range options.OrangePlayers {
 		playerConfigs = append(playerConfigs, playerInfo.ToPlayer().ToPlayerConfig(1))
 	}
-
-	println(playerConfigs)
 
 	conn.SendPacket(&flat.MatchConfigurationT{
 		AutoStartBots:         true,

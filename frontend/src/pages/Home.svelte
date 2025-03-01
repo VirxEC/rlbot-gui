@@ -23,7 +23,7 @@
     const backgroundImage =
         arenaImages[Math.floor(Math.random() * arenaImages.length)];
 
-    let paths = $state(
+    let paths: { tagName: string | null, repo: string | null, installPath: string }[] = $state(
         JSON.parse(window.localStorage.getItem("BOT_SEARCH_PATHS") || "[]"),
     );
 
@@ -38,7 +38,7 @@
         loadingPlayers = true;
         let internalUpdateTime = new Date();
         latestBotUpdateTime = internalUpdateTime;
-        const result = await App.GetBots(paths);
+        const result = await App.GetBots(paths.map((x) => x.installPath));
         if (latestBotUpdateTime !== internalUpdateTime) {
             return; // if newer "search" already started, dont write old data
         }
