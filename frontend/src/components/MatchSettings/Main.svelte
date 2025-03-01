@@ -15,7 +15,10 @@
     } = $props();
     let showExtraOptions = $state(false);
     let showMutators = $state(false);
-    let randomizeMap = $state(false);
+    let randomizeMap = $state(localStorage.getItem("MS_RANDOMIZE_MAP") === "true");
+    $effect(() => {
+        localStorage.setItem("MS_RANDOMIZE_MAP", randomizeMap.toString());
+    });
 
     const existingMatchBehaviors: { [n: string]: number } = {
         "Restart if different": 0,
