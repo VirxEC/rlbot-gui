@@ -27,8 +27,8 @@ func main() {
 	// Create application with options
 	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Title:     "RLBotGUI",
-		Width:     1024,
-		Height:    768,
+		Width:     1300,
+		Height:    870,
 		MinWidth:  600,
 		MinHeight: 400,
 		// AssetServer: &assetserver.Options{
