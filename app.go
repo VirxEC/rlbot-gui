@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"github.com/ncruces/zenity"
 	rlbot "github.com/swz-git/go-interface"
@@ -21,6 +22,20 @@ func (a *App) IgnoreMe(
 ) {
 }
 
+func (a *App) GetDefaultPath() string {
+	if runtime.GOOS == "windows" {
+		localappdata := os.Getenv("LOCALAPPDATA")
+		return filepath.Join(localappdata, "RLBotGUI")
+	}
+
+	home := os.Getenv("HOME")
+	return filepath.Join(home, ".rlbotgui")
+}
+
+func (a *App) DownloadBotpack(url string, installPath string) Result {
+	return Result{false, "Not implemented"}
+}
+
 // NewApp creates a new App application struct
 func NewApp() *App {
 	ip := os.Getenv("RLBOT_SERVER_IP")
@@ -34,18 +49,11 @@ func NewApp() *App {
 	}
 
 	rlbot_address := ip + ":" + port
-	// print the address
-	println("RLBotServer address: " + rlbot_address)
 
 	return &App{
 		rlbot_address,
 	}
 }
-
-// // Greet returns a greeting for the given name
-// func (a *App) Greet(name string) string {
-// 	return fmt.Sprintf("Hello %s, It's show time!", name)
-// }
 
 func recursiveFileSearch(root, pattern string) ([]string, error) {
 	var matches []string
