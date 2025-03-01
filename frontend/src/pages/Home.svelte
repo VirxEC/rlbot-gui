@@ -156,6 +156,12 @@
             });
         }
     }
+
+    let searchQuery = $state("");
+
+    function handleSearch(event: Event) {
+        searchQuery = (event.target as HTMLInputElement).value;
+    }
 </script>
 
 <div class="page" style={`background-image: url("${backgroundImage}")`}>
@@ -173,9 +179,9 @@
                 >
             {/if}
             <div style="flex:1"></div>
-            <input type="text" class="botSearch" placeholder="Search..." />
+            <input type="text" class="botSearch" placeholder="Search..." oninput={handleSearch}/>
         </header>
-        <BotList bind:showHuman items={players} />
+        <BotList bind:showHuman items={players} searchQuery={searchQuery} />
     </div>
 
     <div class="teams"><Teams bind:bluePlayers bind:orangePlayers /></div>
