@@ -57,6 +57,7 @@
     .teamBotList {
         padding: 0.6rem;
         overflow: auto;
+        height: 100%;
         min-height: 4rem;
         display: flex;
         flex-direction: column;
