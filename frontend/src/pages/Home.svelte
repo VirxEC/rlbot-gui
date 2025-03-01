@@ -235,7 +235,7 @@
     }
     .availableBots {
         padding-bottom: 0.6rem;
-        flex-grow: 2;
+        height: 66.67%;
         display: flex;
         flex-direction: column;
     }
@@ -252,7 +252,7 @@
         filter: invert();
     }
     .teams {
-        flex-grow: 1;
+        height: 33.33%;
         display: flex;
         flex-direction: column;
     }

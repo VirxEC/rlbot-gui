@@ -49,7 +49,7 @@
         height: 100%;
     }
     .teams > .team {
-        flex: 1;
+        flex: 1 0 auto; /* Prevents the team from growing before its child */
         padding: 0px 0;
         /* Nice transparent blur */
         background-color: rgba(0, 0, 0, 0.7);
@@ -59,6 +59,7 @@
         flex-direction: column;
         border: 2px solid transparent;
         border-radius: 0.6rem 0.6rem 0px 0px;
+        max-height: 100%; /* Ensures the team does not grow beyond its container */
     }
     .teams > .team > header {
         border-radius: 0.4rem 0.4rem 0px 0px;

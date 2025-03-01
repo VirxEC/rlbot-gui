@@ -34,8 +34,10 @@
         onconsider={handleSort}
         onfinalize={handleSort}
     >
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
         {#each items as bot (bot.id)}
-            <div class="bot" animate:flip={{ duration: flipDurationMs }}>
+            <div class="bot" animate:flip={{ duration: flipDurationMs }} onclick={e => e.stopPropagation()}>
                 <img src={bot?.icon || defaultIcon} alt="icon" />
                 <p>{bot?.displayName}</p>
                 <div style="flex: 1;"></div>
@@ -55,7 +57,6 @@
     .teamBotList {
         padding: 0.6rem;
         overflow: auto;
-        height: 100%;
         min-height: 4rem;
         display: flex;
         flex-direction: column;
@@ -70,6 +71,7 @@
         flex-direction: column;
         gap: 0.5rem;
         min-height: 100%;
+        overflow-y: auto;
     }
     .bot {
         display: flex;
