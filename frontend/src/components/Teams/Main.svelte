@@ -4,11 +4,22 @@
     let {
         bluePlayers = $bindable(),
         orangePlayers = $bindable(),
-    }: { bluePlayers: any[]; orangePlayers: any[] } = $props();
+        selectedTeam = $bindable(null),
+    }: { bluePlayers: any[]; orangePlayers: any[], selectedTeam: 'blue' | 'orange' | null } = $props();
+
+    function toggleTeam(team: 'blue' | 'orange') {
+        if (selectedTeam === team) {
+            selectedTeam = null;
+        } else {
+            selectedTeam = team;
+        }
+    }
 </script>
 
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="teams">
-    <div class="team box">
+    <div class="team box blue" onclick={() => toggleTeam('blue')} class:selected={selectedTeam === 'blue'}>
         <header class="blue">
             <h3>Blue team</h3>
             <div style="flex: 1;"></div>
@@ -16,7 +27,7 @@
         </header>
         <TeamBotList bind:items={bluePlayers} />
     </div>
-    <div class="team box">
+    <div class="team box orange" onclick={() => toggleTeam('orange')} class:selected={selectedTeam === 'orange'}>
         <header class="orange">
             <h3>Orange team</h3>
             <div style="flex: 1;"></div>
@@ -35,9 +46,10 @@
     .teams {
         display: flex;
         gap: 1rem;
+        height: 100%;
     }
     .teams > .team {
-        flex: 1;
+        flex: 1 0 auto; /* Prevents the team from growing before its child */
         padding: 0px 0;
         /* Nice transparent blur */
         background-color: rgba(0, 0, 0, 0.7);
@@ -45,6 +57,9 @@
         backdrop-filter: blur(10px);
         display: flex;
         flex-direction: column;
+        border: 2px solid transparent;
+        border-radius: 0.6rem 0.6rem 0px 0px;
+        max-height: 100%; /* Ensures the team does not grow beyond its container */
     }
     .teams > .team > header {
         border-radius: 0.4rem 0.4rem 0px 0px;
@@ -53,13 +68,27 @@
         display: flex;
         color: white;
     }
+    header {
+        border: 2px solid;
+    }
     header.blue {
+        border-color: #0054a6;
         background-color: #0054a6;
     }
     header.orange {
+        border-color: #f26522;
         background-color: #f26522;
     }
     .dimmed {
         color: #ffffffcc;
+    }
+    .team.selected {
+        border: 2px solid;
+    }
+    .team.selected.blue {
+        border-color: #0054a6;
+    }
+    .team.selected.orange {
+        border-color: #f26522;
     }
 </style>

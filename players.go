@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"sort"
 
 	"github.com/BurntSushi/toml"
 	"github.com/swz-git/go-interface/flat"
@@ -166,7 +167,7 @@ func (a *App) GetBots(paths []string) []BotInfo {
 	potentialConfigs := []string{}
 
 	for _, path := range paths {
-		new, err := recursiveFileSearch(path, "bot.toml")
+		new, err := recursiveTomlSearch(path, "bot")
 		if err != nil {
 			println("WARN: failed to search path: " + path)
 			continue
@@ -188,17 +189,24 @@ func (a *App) GetBots(paths []string) []BotInfo {
 		// make location path relative to parent of bot.toml
 		conf.Settings.RootDir = filepath.Join(filepath.Dir(potentialConfigPath), conf.Settings.RootDir)
 
+		var logo_file string
+		if conf.Settings.LogoFile == "" {
+			logo_file = filepath.Join(conf.Settings.RootDir, "logo.png")
+		} else {
+			logo_file = filepath.Join(conf.Settings.RootDir, conf.Settings.LogoFile)
+		}
+
 		// Read logo file and convert it to data url so the frontend can use it
-		if conf.Settings.LogoFile != "" {
-			conf.Settings.LogoFile = filepath.Join(conf.Settings.RootDir, conf.Settings.LogoFile)
-			logo_data, err := os.ReadFile(conf.Settings.LogoFile)
-			if err != nil {
+		logo_data, err := os.ReadFile(logo_file)
+		if err != nil {
+			// only warn if the logo file was explicitly set
+			if conf.Settings.LogoFile != "" {
 				println("WARN: failed to read logo file at " + conf.Settings.LogoFile)
-			} else {
-				mtype := mimetype.Detect(logo_data)
-				b64data := base64.StdEncoding.EncodeToString(logo_data)
-				conf.Settings.LogoFile = "data:" + mtype.String() + ";base64," + b64data
 			}
+		} else {
+			mtype := mimetype.Detect(logo_data)
+			b64data := base64.StdEncoding.EncodeToString(logo_data)
+			conf.Settings.LogoFile = "data:" + mtype.String() + ";base64," + b64data
 		}
 
 		infos = append(infos, BotInfo{
@@ -206,6 +214,11 @@ func (a *App) GetBots(paths []string) []BotInfo {
 			TomlPath: potentialConfigPath,
 		})
 	}
+
+	// sort infos by bot name
+	sort.Slice(infos, func(i, j int) bool {
+		return infos[i].Config.Settings.Name < infos[j].Config.Settings.Name
+	})
 
 	return infos
 }

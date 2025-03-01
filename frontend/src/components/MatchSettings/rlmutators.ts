@@ -61,7 +61,7 @@ export const mutators: { [x: string]: string[] } = {
     "Super High",
     "Lowish",
   ],
-  boost_option: [
+  boost_amount_option: [
     "Default",
     "Unlimited",
     "Slow Recharge",

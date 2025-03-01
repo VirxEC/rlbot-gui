@@ -8,7 +8,6 @@
     /** @import * from '../../bindings/gui' */
     import toast from "svelte-5-french-toast";
     import arenaImages from "../arena-images";
-    import closeIcon from "../assets/close.svg";
     import reloadIcon from "../assets/reload.svg";
     import BotList from "../components/BotList.svelte";
     // @ts-ignore
@@ -19,26 +18,27 @@
     import { BASE_PLAYERS } from "../base-players";
     import { mapStore } from "../settings";
     import { MAPS_STANDARD } from "../arena-names";
+    import PathsViewer from "../components/PathsViewer.svelte";
 
     const backgroundImage =
         arenaImages[Math.floor(Math.random() * arenaImages.length)];
-    // const backgroundImage = arenaImages.find((x) =>
-    //     x.includes("Mannfield_Stormy"),
-    // );
 
-    let paths = $state(
+    let paths: { tagName: string | null, repo: string | null, installPath: string }[] = $state(
         JSON.parse(window.localStorage.getItem("BOT_SEARCH_PATHS") || "[]"),
     );
 
     let players: DraggablePlayer[] = $state([...BASE_PLAYERS]);
+    let selectedTeam = $state(null);
 
     let loadingPlayers = $state(false);
     let latestBotUpdateTime = null;
+    let showPathsViewer = $state(false);
+
     async function updateBots() {
         loadingPlayers = true;
         let internalUpdateTime = new Date();
         latestBotUpdateTime = internalUpdateTime;
-        const result = await App.GetBots(paths);
+        const result = await App.GetBots(paths.map((x) => x.installPath));
         if (latestBotUpdateTime !== internalUpdateTime) {
             return; // if newer "search" already started, dont write old data
         }
@@ -65,6 +65,10 @@
 
     let bluePlayers: DraggablePlayer[] = $state([]);
     let orangePlayers: DraggablePlayer[] = $state([]);
+    let showHuman = $state(true);
+    $effect(() => {
+        showHuman = !(bluePlayers.some((x) => x.tags.includes("human")) || orangePlayers.some((x) => x.tags.includes("human")));
+    });
 
     let mode = $state(localStorage.getItem("MS_MODE") || "Soccer");
     $effect(() => {
@@ -153,6 +157,12 @@
             });
         }
     }
+
+    let searchQuery = $state("");
+
+    function handleSearch(event: Event) {
+        searchQuery = (event.target as HTMLInputElement).value;
+    }
 </script>
 
 <div class="page" style={`background-image: url("${backgroundImage}")`}>
@@ -160,33 +170,7 @@
         <header>
             <h1>Bots</h1>
             <div class="dropdown">
-                <button>Add/Remove</button>
-                <div class="dropmenu">
-                    {#each paths as path, i}
-                        <div class="path">
-                            <pre>{path}</pre>
-                            <button
-                                class="close"
-                                onclick={() => {
-                                    paths.splice(i, 1);
-                                    // makes reactivity work
-                                    paths = paths;
-                                }}
-                            >
-                                <img src={closeIcon} alt="X" />
-                            </button>
-                        </div>
-                    {/each}
-                    <button
-                        onclick={async () => {
-                            let result = await App.PickFolder();
-                            console.log("PickFolder returned:", result);
-                            if (result != "") {
-                                paths = [...paths, result];
-                            }
-                        }}>Add folder</button
-                    >
-                </div>
+                <button onclick={() => { showPathsViewer = true }}>Add/Remove</button>
             </div>
             {#if loadingPlayers}
                 <h3>Searching...</h3>
@@ -196,12 +180,19 @@
                 >
             {/if}
             <div style="flex:1"></div>
-            <input type="text" class="botSearch" placeholder="Search..." />
+            <input type="text" class="botSearch" placeholder="Search..." oninput={handleSearch}/>
         </header>
-        <BotList items={players} />
+        <BotList
+            bind:bluePlayers
+            bind:orangePlayers
+            bind:showHuman
+            items={players}
+            searchQuery={searchQuery}
+            selectedTeam={selectedTeam}
+        />
     </div>
 
-    <div><Teams bind:bluePlayers bind:orangePlayers /></div>
+    <div class="teams"><Teams bind:bluePlayers bind:orangePlayers bind:selectedTeam /></div>
 
     <div class="box">
         <MatchSettings
@@ -214,6 +205,8 @@
         />
     </div>
 </div>
+
+<PathsViewer bind:visible={showPathsViewer} bind:paths={paths} />
 
 <style>
     .page {
@@ -242,6 +235,9 @@
     }
     .availableBots {
         padding-bottom: 0.6rem;
+        height: 66.67%;
+        display: flex;
+        flex-direction: column;
     }
     .availableBots header {
         display: flex;
@@ -255,20 +251,9 @@
     .reloadButton img {
         filter: invert();
     }
-    .path {
+    .teams {
+        height: 33.33%;
         display: flex;
-        align-items: center;
-        gap: 1rem;
-        justify-content: space-between;
-    }
-    .path pre {
-        font-size: 1rem;
-        margin: 0px;
-    }
-    .path button {
-        padding: 0px;
-    }
-    .path button img {
-        filter: invert();
+        flex-direction: column;
     }
 </style>
