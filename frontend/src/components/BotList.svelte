@@ -4,9 +4,15 @@
         dndzone,
         TRIGGERS,
         SHADOW_ITEM_MARKER_PROPERTY_NAME,
+        alertToScreenReader,
     } from "svelte-dnd-action";
     import defaultIcon from "../assets/rlbot_mono.png";
     import type { DraggablePlayer } from "../index";
+    import { App, BotInfo } from "../../bindings/gui";
+    import Modal from "./Modal.svelte";
+    import { Browser } from "@wailsio/runtime";
+    import toast from "svelte-5-french-toast";
+
     let {
         items = [],
         showHuman = $bindable(true),
@@ -33,6 +39,9 @@
     ];
 
     let filteredItems: DraggablePlayer[] = $state([]);
+    let showModal = $state(false);
+    let selectedBot: [BotInfo, string, string] | null = $state(null);
+
     $effect(() => {
         filteredItems = filterBots(selectedTags, showHuman, searchQuery);
     });
@@ -121,6 +130,32 @@
             orangePlayers = [bot, ...orangePlayers];
         }
     }
+
+    function handleInfoClick(bot: DraggablePlayer) {
+        if (bot.player instanceof BotInfo) {
+            selectedBot = [bot.player, bot.displayName, bot.icon];
+            showModal = true;
+        }
+    }
+
+    function OpenSelectedBotSource() {
+        if (selectedBot) {
+            Browser.OpenURL(selectedBot[0].config.details.sourceLink);
+        }
+    }
+
+    function EditSelectedBotAppearance() {
+        if (selectedBot) {
+            alert.bind(null, "Not implemented yet")();
+        }
+    }
+
+    function ShowSelectedBotFiles() {
+        if (selectedBot) {
+            App.ShowPathInExplorer(selectedBot[0].tomlPath)
+                .catch((err) => toast.error(err, {duration: 10000}));
+        }
+    }
 </script>
 
 <div class="tag-buttons">
@@ -156,9 +191,49 @@
         <div class="bot" animate:flip={{ duration: flipDurationMs }} onclick={() => handleBotClick(bot)}>
             <img src={bot.icon || defaultIcon} alt="icon" />
             <p>{bot.displayName}</p>
+            {#if bot.player && bot.player instanceof BotInfo}
+                <button class="info-button" onclick={() => handleInfoClick(bot)}>[ i ]</button>
+            {/if}
         </div>
     {/each}
 </div>
+
+<Modal title={selectedBot ? selectedBot[1] : ""} bind:visible={showModal}>
+{#if selectedBot}
+    <div class="modal-content">
+        <div class="bot-left-column">
+            <p>Developers: {selectedBot[0].config.details.developer}</p>
+            <p>Description: {selectedBot[0].config.details.description}</p>
+            <p>Fun fact: {selectedBot[0].config.details.funFact}</p>
+            <p>Source code:
+                <!-- svelte-ignore a11y_invalid_attribute -->
+                <a href="#" onclick={OpenSelectedBotSource} target="_blank">
+                    {selectedBot[0].config.details.sourceLink}
+                </a>
+            </p>
+            <p>Language: {selectedBot[0].config.details.language}</p>
+            {#if selectedBot[0].config.details.tags.length > 0}
+            <div class="tags">
+                Tags: 
+                {#each selectedBot[0].config.details.tags as tag}
+                    <span class="tag">{tag}</span>
+                {/each}
+            </div>
+            {/if}
+            <p id="toml-path">{selectedBot[0].tomlPath}</p>
+            <div id="button-group">
+                <button class="show-button" onclick={EditSelectedBotAppearance}>Edit Appearance</button>
+                <button class="show-button" onclick={ShowSelectedBotFiles}>Show Files</button>
+            </div>
+        </div>
+        {#if selectedBot[2]}
+        <div class="bot-right-column">
+            <img src={selectedBot[2]} alt="icon" />
+        </div>
+        {/if}
+    </div>
+{/if}
+</Modal>
 
 <style>
     .tag-buttons {
@@ -216,5 +291,60 @@
     .bot img {
         height: 2rem;
         width: auto;
+    }
+    .info-button {
+        background: none;
+        border: none;
+        color: var(--foreground);
+        cursor: pointer;
+        font-size: 1rem;
+    }
+    .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+    .tag {
+        background-color: grey;
+        color: white;
+        padding: 0.2rem 0.5rem;
+        border-radius: 0.25rem;
+    }
+    .modal-content {
+        display: flex;
+        flex-direction: row;
+        gap: 1rem;
+    }
+    .bot-left-column {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        max-width: 60vw;
+    }
+    .bot-right-column {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .bot-right-column img {
+        max-height: 250px;
+        max-width: 250px;
+        width: auto;
+    }
+    .show-button {
+        background: var(--background-alt);
+        color: var(--foreground);
+        cursor: pointer;
+        font-size: 1rem;
+        align-self: flex-start;
+        border: solid 1px gray;
+    }
+    #toml-path {
+        font-size: 0.8rem;
+        color: grey;
+    }
+    #button-group {
+        display: flex;
     }
 </style>

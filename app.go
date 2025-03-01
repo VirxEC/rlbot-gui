@@ -4,6 +4,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -269,4 +270,35 @@ func (a *App) PickFolder() string {
 		println("ERR: File picker failed")
 	}
 	return path
+}
+
+func (a *App) ShowPathInExplorer(path string) error {
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return err
+	}
+
+	// if is dir
+	var folder string
+	if fileInfo.IsDir() {
+		folder = path
+	} else {
+		folder = filepath.Dir(path)
+	}
+
+	if runtime.GOOS == "windows" {
+		cmd := exec.Command("explorer", folder)
+		err := cmd.Run()
+		if err != nil {
+			return err
+		}
+	} else {
+		cmd := exec.Command("xdg-open", folder)
+		err := cmd.Run()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

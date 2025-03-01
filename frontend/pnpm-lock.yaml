@@ -26,13 +26,13 @@ importers:
         version: 1.0.5
       '@rsbuild/plugin-svelte':
         specifier: 1.0.5
-        version: 1.0.5(@rsbuild/core@1.0.5)(svelte@5.20.5)(typescript@5.7.3)
+        version: 1.0.5(@rsbuild/core@1.0.5)(svelte@5.20.5)(typescript@5.8.2)
       oxlint:
         specifier: ^0.13.2
         version: 0.13.2
       typescript:
-        specifier: ^5.7.3
-        version: 5.7.3
+        specifier: ^5.8.2
+        version: 5.8.2
 
 packages:
 
@@ -337,8 +337,8 @@ packages:
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
-  typescript@5.7.3:
-    resolution: {integrity: sha512-84MVSjMEHP+FQRPy3pX9sTVV/INIex71s9TL2Gm5FG/WG1SqXeKyZ0k7/blY/4FdOzI12CBy1vGc4og/eus0fw==}
+  typescript@5.8.2:
+    resolution: {integrity: sha512-aJn6wq13/afZp/jT9QZmwEjDqqvSGp1VT5GVg+f/t6/oVyrgXM6BY1h9BRh/O5p3PlUPAe+WuiEZOmb/49RqoQ==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -419,11 +419,11 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.3
 
-  '@rsbuild/plugin-svelte@1.0.5(@rsbuild/core@1.0.5)(svelte@5.20.5)(typescript@5.7.3)':
+  '@rsbuild/plugin-svelte@1.0.5(@rsbuild/core@1.0.5)(svelte@5.20.5)(typescript@5.8.2)':
     dependencies:
       '@rsbuild/core': 1.0.5
       svelte-loader: 3.2.4(svelte@5.20.5)
-      svelte-preprocess: 6.0.3(svelte@5.20.5)(typescript@5.7.3)
+      svelte-preprocess: 6.0.3(svelte@5.20.5)(typescript@5.8.2)
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
@@ -579,11 +579,11 @@ snapshots:
       svelte-dev-helper: 1.1.9
       svelte-hmr: 0.14.12(svelte@5.20.5)
 
-  svelte-preprocess@6.0.3(svelte@5.20.5)(typescript@5.7.3):
+  svelte-preprocess@6.0.3(svelte@5.20.5)(typescript@5.8.2):
     dependencies:
       svelte: 5.20.5
     optionalDependencies:
-      typescript: 5.7.3
+      typescript: 5.8.2
 
   svelte-writable-derived@3.1.1(svelte@5.20.5):
     dependencies:
@@ -608,6 +608,6 @@ snapshots:
 
   tslib@2.8.1: {}
 
-  typescript@5.7.3: {}
+  typescript@5.8.2: {}
 
   zimmerframe@1.1.2: {}
