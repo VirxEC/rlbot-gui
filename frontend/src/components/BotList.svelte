@@ -1,17 +1,17 @@
 <script lang="ts">
-import { flip } from "svelte/animate";
-import {
-  dndzone,
-  TRIGGERS,
-  SHADOW_ITEM_MARKER_PROPERTY_NAME,
-  alertToScreenReader,
-} from "svelte-dnd-action";
-import defaultIcon from "../assets/rlbot_mono.png";
-import type { DraggablePlayer } from "../index";
-import { App, BotInfo } from "../../bindings/gui";
-import Modal from "./Modal.svelte";
 import { Browser } from "@wailsio/runtime";
 import toast from "svelte-5-french-toast";
+import {
+  SHADOW_ITEM_MARKER_PROPERTY_NAME,
+  TRIGGERS,
+  alertToScreenReader,
+  dndzone,
+} from "svelte-dnd-action";
+import { flip } from "svelte/animate";
+import { App, BotInfo } from "../../bindings/gui";
+import defaultIcon from "../assets/rlbot_mono.png";
+import type { DraggablePlayer } from "../index";
+import Modal from "./Modal.svelte";
 
 let {
   items = [],
@@ -226,7 +226,7 @@ function ShowSelectedBotFiles() {
             <p>Language: {selectedBot[0].config.details.language}</p>
             {#if selectedBot[0].config.details.tags.length > 0}
             <div class="tags">
-                Tags: 
+                Tags:
                 {#each selectedBot[0].config.details.tags as tag}
                     <span class="tag">{tag}</span>
                 {/each}
@@ -234,8 +234,8 @@ function ShowSelectedBotFiles() {
             {/if}
             <p id="toml-path">{selectedBot[0].tomlPath}</p>
             <div id="button-group">
-                <button class="show-button" onclick={EditSelectedBotAppearance}>Edit Appearance</button>
-                <button class="show-button" onclick={ShowSelectedBotFiles}>Show Files</button>
+                <button onclick={EditSelectedBotAppearance}>Edit Appearance</button>
+                <button onclick={ShowSelectedBotFiles}>Show Files</button>
             </div>
         </div>
         {#if selectedBot[2]}
@@ -344,19 +344,19 @@ function ShowSelectedBotFiles() {
         max-width: 250px;
         width: auto;
     }
-    .show-button {
+    #button-group {
+        display: flex;
+        gap: 1rem;
+    }
+    #button-group button {
         background: var(--background-alt);
         color: var(--foreground);
         cursor: pointer;
         font-size: 1rem;
         align-self: flex-start;
-        border: solid 1px gray;
     }
     #toml-path {
         font-size: 0.8rem;
         color: grey;
-    }
-    #button-group {
-        display: flex;
     }
 </style>
