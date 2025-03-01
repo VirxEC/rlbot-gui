@@ -136,7 +136,7 @@
             </label>
         </div>
         {#if selectedBotpackType === "custom"}
-            <input type="text" placeholder="https://github.com/owner/repo" bind:value={customRepo} />
+            <input type="text" placeholder="owner/repo" bind:value={customRepo} />
         {/if}
         <div class="button-row">
             <button onclick={confirmAddBotpack}>Confirm</button>
