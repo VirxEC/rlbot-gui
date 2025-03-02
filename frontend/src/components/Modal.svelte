@@ -45,13 +45,17 @@ function handleMouseDown(e: MouseEvent) {
         justify-content: center;
         align-items: center;
         z-index: 100;
-        background-color: #00000080;
-        transition: opacity 0.2s;
+        background-color: #00000060;
+
+        opacity: 1;
+        visibility: visible;
+        transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
     }
 
     .hidden, .hidden * {
         opacity: 0;
-        z-index: -100 !important;
+        visibility: hidden;
+        transition: opacity 0.2s ease-in-out, visibility 0s linear 0.2s;
     }
 
     .modal {
