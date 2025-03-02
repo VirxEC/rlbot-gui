@@ -1,24 +1,24 @@
 <script lang="ts">
+/** @import * from '../../bindings/gui' */
+import toast from "svelte-5-french-toast";
 // @ts-ignore
 import {
   App,
   BotInfo,
   type StartMatchOptions,
 } from "../../bindings/gui/index.js";
-/** @import * from '../../bindings/gui' */
-import toast from "svelte-5-french-toast";
 import arenaImages from "../arena-images";
+import { MAPS_STANDARD } from "../arena-names";
 import reloadIcon from "../assets/reload.svg";
+import { BASE_PLAYERS } from "../base-players";
 import BotList from "../components/BotList.svelte";
 // @ts-ignore
-import Teams from "../components/Teams/Main.svelte";
-// @ts-ignore
 import MatchSettings from "../components/MatchSettings/Main.svelte";
-import { type DraggablePlayer, draggablePlayerToPlayerJs } from "../index";
-import { BASE_PLAYERS } from "../base-players";
-import { mapStore } from "../settings";
-import { MAPS_STANDARD } from "../arena-names";
 import PathsViewer from "../components/PathsViewer.svelte";
+// @ts-ignore
+import Teams from "../components/Teams/Main.svelte";
+import { type DraggablePlayer, draggablePlayerToPlayerJs } from "../index";
+import { mapStore } from "../settings";
 
 const backgroundImage =
   arenaImages[Math.floor(Math.random() * arenaImages.length)];
@@ -246,7 +246,6 @@ function handleSearch(event: Event) {
     }
     .availableBots {
         padding-bottom: 0.6rem;
-        height: 66.67%;
         display: flex;
         flex-direction: column;
     }
@@ -263,7 +262,7 @@ function handleSearch(event: Event) {
         filter: invert();
     }
     .teams {
-        height: 33.33%;
+        overflow: auto;
         display: flex;
         flex-direction: column;
     }

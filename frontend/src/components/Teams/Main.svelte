@@ -53,7 +53,7 @@ function toggleTeam(team: "blue" | "orange") {
         height: 100%;
     }
     .teams > .team {
-        flex: 1 0 auto; /* Prevents the team from growing before its child */
+        width: 50%;
         padding: 0px 0;
         /* Nice transparent blur */
         background-color: rgba(0, 0, 0, 0.7);
