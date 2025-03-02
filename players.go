@@ -163,7 +163,6 @@ type BotDetails struct {
 }
 
 func (a *App) GetBots(paths []string) []BotInfo {
-	// TODO: Search recursive in paths
 	potentialConfigs := []string{}
 
 	for _, path := range paths {

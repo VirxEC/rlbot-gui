@@ -112,10 +112,9 @@ function confirmAddBotpack() {
 <Modal title="Manage Paths" bind:visible={visible}>
     <div class="paths">
         <div class="button-row">
-            <!-- TODO: this class is not needed -->
-            <button class="full-width" onclick={addFolder}>Add folder</button>
-            <button class="full-width" onclick={openAddBotpackModal}>Add Botpack</button>
-            <button class="full-width" onclick={alert.bind(null, "TODO: not implemented yet")}>Add File</button>
+            <button onclick={addFolder}>Add folder</button>
+            <button onclick={alert.bind(null, "TODO: not implemented yet")}>Add File</button>
+            <button onclick={openAddBotpackModal}>Add Botpack</button>
         </div>
 
         {#each paths as path, i}
@@ -165,7 +164,12 @@ function confirmAddBotpack() {
         display: flex;
         gap: 1rem;
     }
-    .full-width {
+    .button-row {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+    }
+    .button-row button {
         flex: 1;
     }
     .path {
@@ -199,10 +203,5 @@ function confirmAddBotpack() {
         display: flex;
         align-items: center;
         gap: 0.5rem;
-    }
-    .button-row {
-        display: flex;
-        gap: 1rem;
-        justify-content: flex-end;
     }
 </style>

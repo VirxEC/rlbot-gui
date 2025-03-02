@@ -259,7 +259,7 @@ func (a *App) StartMatch(options StartMatchOptions) Result {
 func (a *App) StopMatch(shutdownServer bool) Result {
 	// TODO: Save this in App struct
 	// TODO: Make dynamic, pull from env var?
-	conn, err := rlbot.Connect("127.0.0.1:23234")
+	conn, err := rlbot.Connect(a.rlbot_address)
 	if err != nil {
 		return Result{false, "Failed to connect to rlbot"}
 	}
