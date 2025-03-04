@@ -160,3 +160,34 @@ func DownloadExtractArchive(url string, dest string) error {
 	err = extractTar(tr, dest)
 	return err
 }
+
+func (a *App) GetLatestReleaseData(repo string) (*GhRelease, error) {
+	latest_release_url := "https://api.github.com/repos/" + repo + "/releases/latest"
+
+	resp, err := http.Get(latest_release_url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	content, err := ParseReleaseData(body)
+	if err != nil {
+		return nil, err
+	}
+
+	a.latest_release_json = append(a.latest_release_json, RawReleaseInfo{repo, content})
+
+	return &a.latest_release_json[len(a.latest_release_json)-1].content, nil
+}
+
+// func (a *App) CheckForNewRelease(tag string) (bool, error) {
+// 	//go:build !production
+// 	return false, nil
+
+// 	return false, nil
+// }

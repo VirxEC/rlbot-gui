@@ -23,9 +23,9 @@ $effect(() => {
 });
 
 const existingMatchBehaviors: { [n: string]: number } = {
-  "Restart if different": 0,
-  Restart: 1,
-  "Continue and spawn": 2,
+  Restart: 0,
+  "Continue and spawn": 1,
+  "Restart if different": 2,
 };
 
 function cleanCase(toClean: string) {

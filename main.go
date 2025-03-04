@@ -3,6 +3,7 @@ package main
 import (
 	"embed"
 	"log"
+	"log/slog"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 	// "github.com/wailsapp/wails/v3/pkg/options"
@@ -19,6 +20,7 @@ func main() {
 		Services: []application.Service{
 			application.NewService(NewApp()),
 		},
+		LogLevel: slog.LevelWarn,
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
 		},

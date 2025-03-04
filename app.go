@@ -1,8 +1,6 @@
 package main
 
 import (
-	"io"
-	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -47,30 +45,6 @@ func (a *App) GetDefaultPath() string {
 	}
 
 	return filepath.Join(xdg_data_home, "rlbotgui")
-}
-
-func (a *App) GetLatestReleaseData(repo string) (*GhRelease, error) {
-	latest_release_url := "https://api.github.com/repos/" + repo + "/releases/latest"
-
-	resp, err := http.Get(latest_release_url)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	content, err := ParseReleaseData(body)
-	if err != nil {
-		return nil, err
-	}
-
-	a.latest_release_json = append(a.latest_release_json, RawReleaseInfo{repo, content})
-
-	return &a.latest_release_json[len(a.latest_release_json)-1].content, nil
 }
 
 func (a *App) DownloadBotpack(repo string, installPath string) (string, error) {
@@ -227,17 +201,17 @@ func (a *App) StartMatch(options StartMatchOptions) Result {
 		launcher = flat.LauncherNoLaunch
 	}
 
-	var playerConfigs []*flat.PlayerConfigurationT
+	playerConfigs := make([]*flat.PlayerConfigurationT, len(options.BluePlayers)+len(options.OrangePlayers))
 
-	for _, playerInfo := range options.BluePlayers {
-		println(playerInfo.ToPlayer().ToPlayerConfig(0))
-		playerConfigs = append(playerConfigs, playerInfo.ToPlayer().ToPlayerConfig(0))
-	}
-	for _, playerInfo := range options.OrangePlayers {
-		playerConfigs = append(playerConfigs, playerInfo.ToPlayer().ToPlayerConfig(1))
+	for i, playerInfo := range options.BluePlayers {
+		playerConfigs[i] = playerInfo.ToPlayer().ToPlayerConfig(0)
 	}
 
-	conn.SendPacket(&flat.MatchConfigurationT{
+	for i, playerInfo := range options.OrangePlayers {
+		playerConfigs[i+len(options.BluePlayers)] = playerInfo.ToPlayer().ToPlayerConfig(1)
+	}
+
+	match := flat.MatchConfigurationT{
 		AutoStartBots:         true,
 		GameMapUpk:            options.Map,
 		PlayerConfigurations:  playerConfigs,
@@ -251,7 +225,10 @@ func (a *App) StartMatch(options StartMatchOptions) Result {
 		Launcher:              launcher,
 		LauncherArg:           options.LauncherArg,
 		ExistingMatchBehavior: flat.ExistingMatchBehavior(options.ExtraOptions.ExistingMatchBehavior),
-	})
+	}
+
+	conn.SendPacket(&match)
+	conn.SendPacket(nil)
 
 	return Result{true, ""}
 }

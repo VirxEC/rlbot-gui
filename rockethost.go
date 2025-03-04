@@ -54,8 +54,7 @@ func (a *App) GetRHostBots() ([]RHostBot, error) {
 			if !ok {
 				return nil, errors.New("invalid json shape: family object doesn't have \"name\"")
 			}
-			fart, _ := json.Marshal(botFamily["versions"])
-			print(string(fart))
+
 			familyBots, ok := botFamily["versions"].([]interface{})
 			if !ok {
 				return nil, errors.New("invalid json shape: family object doesn't have \"versions\"")
