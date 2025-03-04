@@ -10,8 +10,7 @@
   --foreground-opp: var(--background-alt);
   --foreground-opp-alt: var(--background);
 
-  --black: black;
-  --white: white;
+  --link-color: #0099ff;
 }
 
 /* TODO: introduce light mode */
@@ -27,8 +26,7 @@
     --foreground-opp: var(--background-alt);
     --foreground-opp-alt: var(--background);
 
-    --black: black;
-    --white: white;
+    --link-color: #007bff;
 } */
 
 * {
@@ -61,6 +59,10 @@ h5,
 h6,
 p {
   margin: 0px;
+}
+
+a {
+  color: var(--link-color);
 }
 
 /* Drag and drop area styling */
