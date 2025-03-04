@@ -61,7 +61,7 @@ func (info PsyonixBotInfo) ToPlayerConfig(team uint32) *flat.PlayerConfiguration
 				BotSkill: flat.PsyonixSkill(info.Skill),
 			},
 		},
-		Name:       "Psyonix Bot",
+		Name:       "",
 		Team:       team,
 		RootDir:    "",
 		RunCommand: "",
@@ -79,7 +79,7 @@ func (info HumanInfo) ToPlayerConfig(team uint32) *flat.PlayerConfigurationT {
 			Type:  flat.PlayerClassHuman,
 			Value: &flat.HumanT{},
 		},
-		Name:       "Human",
+		Name:       "",
 		Team:       team,
 		RootDir:    "",
 		RunCommand: "",
@@ -89,9 +89,43 @@ func (info HumanInfo) ToPlayerConfig(team uint32) *flat.PlayerConfigurationT {
 	}
 }
 
+type TeamPaintConfig struct {
+	CarPaintId           uint32 `toml:"car_paint_id" json:"carPaintId"`
+	DecalPaintId         uint32 `toml:"decal_paint_id" json:"decalPaintId"`
+	WheelsPaintId        uint32 `toml:"wheels_paint_id" json:"wheelsPaintId"`
+	BoostPaintId         uint32 `toml:"boost_paint_id" json:"boostPaintId"`
+	AntennaPaintId       uint32 `toml:"antenna_paint_id" json:"antennaPaintId"`
+	HatPaintId           uint32 `toml:"hat_paint_id" json:"hatPaintId"`
+	TrailsPaintId        uint32 `toml:"trails_paint_id" json:"trailsPaintId"`
+	GoalExplosionPaintId uint32 `toml:"goal_explosion_paint_id" json:"goalExplosionPaintId"`
+}
+
+type TeamLoadoutConfig struct {
+	TeamColorId     uint32          `toml:"team_color_id" json:"teamColorId"`
+	CustomColorId   uint32          `toml:"custom_color_id" json:"customColorId"`
+	CarId           uint32          `toml:"car_id" json:"carId"`
+	DecalId         uint32          `toml:"decal_id" json:"decalId"`
+	WheelsId        uint32          `toml:"wheels_id" json:"wheelsId"`
+	BoostId         uint32          `toml:"boost_id" json:"boostId"`
+	AntennaId       uint32          `toml:"antenna_id" json:"antennaId"`
+	HatId           uint32          `toml:"hat_id" json:"hatId"`
+	PaintFinishId   uint32          `toml:"paint_finish_id" json:"paintFinishId"`
+	CustomFinishId  uint32          `toml:"custom_finish_id" json:"customFinishId"`
+	EngineAudioId   uint32          `toml:"engine_audio_id" json:"engineAudioId"`
+	TrailsId        uint32          `toml:"trails_id" json:"trailsId"`
+	GoalExplosionId uint32          `toml:"goal_explosion_id" json:"goalExplosionId"`
+	Paint           TeamPaintConfig `toml:"paint" json:"paint"`
+}
+
+type LoadoutConfig struct {
+	Blue   TeamLoadoutConfig `toml:"blue_loadout" json:"blueLoadout"`
+	Orange TeamLoadoutConfig `toml:"orange_loadout" json:"orangeLoadout"`
+}
+
 type BotInfo struct {
-	Config   BotConfig `json:"config"`
-	TomlPath string    `json:"tomlPath"`
+	Config   BotConfig     `json:"config"`
+	Loadout  LoadoutConfig `json:"loadout"`
+	TomlPath string        `json:"tomlPath"`
 }
 
 func (botInfo BotInfo) ToPlayerConfig(team uint32) *flat.PlayerConfigurationT {
@@ -100,6 +134,13 @@ func (botInfo BotInfo) ToPlayerConfig(team uint32) *flat.PlayerConfigurationT {
 		runCommand = botInfo.Config.Settings.RunCommand
 	} else if runtime.GOOS == "linux" {
 		runCommand = botInfo.Config.Settings.RunCommandLinux
+	}
+
+	var loadout *TeamLoadoutConfig
+	if team == 0 {
+		loadout = &botInfo.Loadout.Blue
+	} else {
+		loadout = &botInfo.Loadout.Orange
 	}
 
 	return &flat.PlayerConfigurationT{
@@ -112,8 +153,33 @@ func (botInfo BotInfo) ToPlayerConfig(team uint32) *flat.PlayerConfigurationT {
 		Team:       team,
 		RootDir:    botInfo.Config.Settings.RootDir,
 		RunCommand: runCommand,
-		// TODO: read player loadout file from LooksConfig
-		Loadout:  &flat.PlayerLoadoutT{},
+		Loadout: &flat.PlayerLoadoutT{
+			TeamColorId:     loadout.TeamColorId,
+			CustomColorId:   loadout.CustomColorId,
+			CarId:           loadout.CarId,
+			DecalId:         loadout.DecalId,
+			WheelsId:        loadout.WheelsId,
+			BoostId:         loadout.BoostId,
+			AntennaId:       loadout.AntennaId,
+			HatId:           loadout.HatId,
+			PaintFinishId:   loadout.PaintFinishId,
+			CustomFinishId:  loadout.CustomFinishId,
+			EngineAudioId:   loadout.EngineAudioId,
+			TrailsId:        loadout.TrailsId,
+			GoalExplosionId: loadout.GoalExplosionId,
+			LoadoutPaint: &flat.LoadoutPaintT{
+				CarPaintId:           loadout.Paint.CarPaintId,
+				DecalPaintId:         loadout.Paint.DecalPaintId,
+				WheelsPaintId:        loadout.Paint.WheelsPaintId,
+				BoostPaintId:         loadout.Paint.BoostPaintId,
+				AntennaPaintId:       loadout.Paint.AntennaPaintId,
+				HatPaintId:           loadout.Paint.HatPaintId,
+				TrailsPaintId:        loadout.Paint.TrailsPaintId,
+				GoalExplosionPaintId: loadout.Paint.GoalExplosionPaintId,
+			},
+			PrimaryColorLookup:   &flat.ColorT{},
+			SecondaryColorLookup: &flat.ColorT{},
+		},
 		SpawnId:  0, // let core do this
 		Hivemind: botInfo.Config.Settings.Hivemind,
 	}
@@ -129,8 +195,8 @@ type BotSettings struct {
 	Name string `toml:"name" json:"name"`
 	// A unique string identifying this type of bot, typically on the form "<developer>/<botname>"
 	AgentId string `toml:"agent_id" json:"agentId"`
-	// Path to looks.toml, describing the bots "loadout"
-	LooksConfig string `toml:"looks_config" json:"looksConfig"`
+	// Path to loadout.toml, describing the bots "loadout"
+	LoadoutFile string `toml:"loadout_file" json:"loadoutFile"`
 	// Optional working dir of the bot
 	RootDir string `toml:"root_dir" json:"rootDir"`
 	// Path to the logo of the bot, if ignored, RLBot will look for logo.png
@@ -208,8 +274,22 @@ func (a *App) GetBots(paths []string) []BotInfo {
 			conf.Settings.LogoFile = "data:" + mtype.String() + ";base64," + b64data
 		}
 
+		var loadout LoadoutConfig
+		if conf.Settings.LoadoutFile != "" {
+			loadoutPath := filepath.Join(filepath.Dir(potentialConfigPath), conf.Settings.LoadoutFile)
+			loadoutData, err := os.ReadFile(loadoutPath)
+			if err != nil {
+				println("WARN: failed to read loadout file at " + conf.Settings.LoadoutFile)
+			} else {
+				toml.Decode(string(loadoutData), &loadout)
+			}
+		} else {
+			loadout = LoadoutConfig{}
+		}
+
 		infos = append(infos, BotInfo{
 			Config:   conf,
+			Loadout:  loadout,
 			TomlPath: potentialConfigPath,
 		})
 	}
