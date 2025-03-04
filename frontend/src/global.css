@@ -61,7 +61,7 @@ p {
   margin: 0px;
 }
 
-a {
+a:any-link {
   color: var(--link-color);
 }
 

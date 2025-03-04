@@ -8,6 +8,7 @@ import {
   dndzone,
 } from "svelte-dnd-action";
 import { flip } from "svelte/animate";
+import { stopPropagation } from "svelte/legacy";
 import { App, BotInfo } from "../../bindings/gui";
 import infoIcon from "../assets/info_icon.svg";
 import defaultIcon from "../assets/rlbot_mono.png";
@@ -205,7 +206,7 @@ function ShowSelectedBotFiles() {
             <img src={bot.icon || defaultIcon} alt="icon" />
             <p>{bot.displayName}</p>
             {#if bot.player && bot.player instanceof BotInfo}
-                <button class="info-button" onclick={() => handleInfoClick(bot)}>
+                <button class="info-button" onclick={(e) => {e.stopPropagation();handleInfoClick(bot)}}>
                     <img src={infoIcon} alt="i">
                 </button>
             {:else}
