@@ -156,6 +156,10 @@ const filteredMutatorOptions = Object.keys(mutatorOptions).filter(
 
 <Modal title="RLBot Extra Options" bind:visible={showExtraOptions}>
     <div class="extraoptions">
+        <p>Existing match behaviour</p>
+        <NiceSelect bind:value={extraOptions.existingMatchBehavior} options={existingMatchBehaviors} placeholder="Existing Match Behavior" />
+        <br />
+        <br />
         <input
             type="checkbox"
             id="enableRendering"
@@ -195,16 +199,6 @@ const filteredMutatorOptions = Object.keys(mutatorOptions).filter(
         />
         <label for="instantStart"> Instant Start </label>
         <br />
-        <select
-            name="emb"
-            id="emb"
-            bind:value={extraOptions.existingMatchBehavior}
-        >
-            {#each Object.keys(existingMatchBehaviors) as key}
-                <option value={existingMatchBehaviors[key]}>{key}</option>
-            {/each}
-        </select>
-        <label for="emb"></label>
     </div>
     <div class="bottomButtons">
         <p>Settings are saved automatically</p>
