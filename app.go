@@ -228,7 +228,7 @@ func (a *App) StartMatch(options StartMatchOptions) Result {
 	}
 
 	conn.SendPacket(&match)
-	conn.SendPacket(nil)
+	conn.SendPacket(nil) // Tell core that we want to disconnect
 
 	return Result{true, ""}
 }

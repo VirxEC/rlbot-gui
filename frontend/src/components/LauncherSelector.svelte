@@ -60,7 +60,8 @@ $effect(() => {
     font-size: 1.1rem;
 }
 input[type='radio'] {
-    transform: scale(2);
+    transform: scale(1.4);
+    user-select: none;
 }
 .launcherArg {
     display: flex;
