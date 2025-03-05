@@ -12,6 +12,7 @@ let {
   mode = $bindable(),
   extraOptions = $bindable(),
   mutators = $bindable(),
+  launcherOptionsVisible = $bindable(),
   onStart = (randomizeMap: boolean) => {},
   onStop = () => {},
 } = $props();
@@ -92,7 +93,7 @@ const filteredMutatorOptions = Object.keys(mutatorOptions).filter(
                 />
             </div>
             <div class="right-controls">
-                <LauncherSelector />
+                <LauncherSelector bind:visible={launcherOptionsVisible} />
             </div>
         </div>
         <div class="controls">

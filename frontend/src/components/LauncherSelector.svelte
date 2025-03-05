@@ -2,7 +2,8 @@
 import Modal from "./Modal.svelte";
 import NiceSelect from "./NiceSelect.svelte";
 
-let visible = $state(false);
+let { visible = $bindable() } = $props();
+
 let localLauncher = $state(localStorage.getItem("MS_LAUNCHER") || "");
 let localLauncherArg = $state(localStorage.getItem("MS_LAUNCHER_ARG") || "");
 
@@ -39,7 +40,7 @@ $effect(() => {
 
 <button onclick={() => { visible = true }}>Launcher Options</button>
 
-<Modal title="Select a launcher" bind:visible={visible}>
+<Modal title="Select a launcher" bind:visible>
     <div class="container">
         <NiceSelect bind:value={launcher} options={launcherOptions} placeholder="Select a launcher" />
         {#if launcher === "custom"}

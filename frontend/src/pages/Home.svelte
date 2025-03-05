@@ -31,6 +31,7 @@ let paths: {
   JSON.parse(window.localStorage.getItem("BOT_SEARCH_PATHS") || "[]"),
 );
 
+let launcherOptionsVisible = $state(false);
 let players: DraggablePlayer[] = $state([...BASE_PLAYERS]);
 let selectedTeam = $state(null);
 
@@ -104,6 +105,8 @@ async function onMatchStart(randomizeMap: boolean) {
       position: "bottom-right",
       duration: 5000,
     });
+
+    launcherOptionsVisible = true;
     return;
   }
 
@@ -213,6 +216,7 @@ function handleSearch(event: Event) {
             bind:mode
             bind:mutators={mutatorSettings}
             bind:extraOptions
+            bind:launcherOptionsVisible
         />
     </div>
 </div>

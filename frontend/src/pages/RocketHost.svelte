@@ -69,6 +69,7 @@ refreshRHostServers();
 
 let blueBots: string[] = $state([]);
 let orangeBots: string[] = $state([]);
+let launcherOptionsVisible = $state(false);
 </script>
 
 <div class="page">
@@ -182,7 +183,7 @@ let orangeBots: string[] = $state([]);
             </div>
             <div>
                 <label for="mapselect">Launcher</label>
-                <LauncherSelector />
+                <LauncherSelector bind:visible={launcherOptionsVisible} />
             </div>
         </div>
 
@@ -194,6 +195,8 @@ let orangeBots: string[] = $state([]);
                         position: "bottom-right",
                         duration: 5000,
                     });
+
+                    launcherOptionsVisible = true;
                     return;
                 }
 
