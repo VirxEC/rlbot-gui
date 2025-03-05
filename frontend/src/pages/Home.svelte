@@ -85,7 +85,7 @@ $effect(() => {
 let extraOptions = $state(
   JSON.parse(
     localStorage.getItem("MS_EXTRAOPTIONS") ||
-      '{"enableStateSetting": true, "existingMatchBehavior": 1}',
+      '{"enableStateSetting": true, "existingMatchBehavior": 0}',
   ),
 );
 $effect(() => {
