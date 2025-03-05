@@ -30,12 +30,12 @@ const existingMatchBehaviors: { [n: string]: number } = {
 };
 
 function cleanCase(toClean: string) {
-  let halfClean = toClean.replaceAll("_", " ").replace(" option", "");
+  const halfClean = toClean.replaceAll("_", " ").replace(" option", "");
   return halfClean.charAt(0).toUpperCase() + halfClean.slice(1);
 }
 
 function resetMutators() {
-  for (let key of Object.keys(mutators)) {
+  for (const key of Object.keys(mutators)) {
     mutators[key] = 0;
   }
   selectedPreset = "";
@@ -61,7 +61,7 @@ function setPreset(presetData: Gamemode) {
     randomizeMap = true;
   }
 
-  for (let key of filteredMutatorOptions) {
+  for (const key of filteredMutatorOptions) {
     if (presetData.mutators[key] !== undefined) {
       mutators[key] = mutatorOptions[key].indexOf(presetData.mutators[key]);
     } else {

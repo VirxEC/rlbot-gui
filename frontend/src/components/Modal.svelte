@@ -10,7 +10,7 @@ function handleOuter(e: MouseEvent) {
   if (e.target === wrap && mouseDownWasOutside) visible = false;
 }
 function handleMouseDown(e: MouseEvent) {
-  let res = e.target === wrap;
+  const res = e.target === wrap;
   mouseDownWasOutside = res;
   return res;
 }

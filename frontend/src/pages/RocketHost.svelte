@@ -14,8 +14,8 @@ let botFamilies = $derived.by(() => {
   let families: {
     [name: string]: string[];
   } = {};
-  for (let bot of bots) {
-    let fam = bot.family !== "" ? bot.family : bot.name;
+  for (const bot of bots) {
+    const fam = bot.family !== "" ? bot.family : bot.name;
     if (!Object.hasOwn(families, fam)) {
       families[fam] = [];
     }

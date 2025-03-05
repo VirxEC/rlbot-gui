@@ -4,11 +4,9 @@ import toast from "svelte-5-french-toast";
 import {
   SHADOW_ITEM_MARKER_PROPERTY_NAME,
   TRIGGERS,
-  alertToScreenReader,
   dndzone,
 } from "svelte-dnd-action";
 import { flip } from "svelte/animate";
-import { stopPropagation } from "svelte/legacy";
 import { App, BotInfo } from "../../bindings/gui";
 import infoIcon from "../assets/info_icon.svg";
 import defaultIcon from "../assets/rlbot_mono.png";
