@@ -153,7 +153,7 @@ func (a *App) StartRHostMatch(settings RHostMatchSettings) (string, error) {
 		launcher = flat.LauncherEpic
 	case "custom":
 		launcher = flat.LauncherCustom
-	case "noLaunch":
+	case "nolaunch":
 		launcher = flat.LauncherNoLaunch
 	default:
 		println("No launcher chosen, defaulting to NoLaunch")

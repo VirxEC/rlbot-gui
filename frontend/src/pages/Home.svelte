@@ -31,6 +31,7 @@ let paths: {
   JSON.parse(window.localStorage.getItem("BOT_SEARCH_PATHS") || "[]"),
 );
 
+let launcherOptionsVisible = $state(false);
 let players: DraggablePlayer[] = $state([...BASE_PLAYERS]);
 let selectedTeam = $state(null);
 
@@ -84,7 +85,7 @@ $effect(() => {
 let extraOptions = $state(
   JSON.parse(
     localStorage.getItem("MS_EXTRAOPTIONS") ||
-      '{"enableStateSetting": true, "existingMatchBehavior": 1}',
+      '{"enableStateSetting": true, "existingMatchBehavior": 0}',
   ),
 );
 $effect(() => {
@@ -98,12 +99,14 @@ $effect(() => {
 });
 
 async function onMatchStart(randomizeMap: boolean) {
-  let launcher = localStorage.getItem("MS_LAUNCHER");
+  const launcher = localStorage.getItem("MS_LAUNCHER");
   if (!launcher) {
     toast.error("Please select a launcher first", {
       position: "bottom-right",
       duration: 5000,
     });
+
+    launcherOptionsVisible = true;
     return;
   }
 
@@ -114,7 +117,7 @@ async function onMatchStart(randomizeMap: boolean) {
       ];
   }
 
-  let options: StartMatchOptions = {
+  const options: StartMatchOptions = {
     map: $mapStore,
     gameMode: mode,
     bluePlayers: bluePlayers.map((x: DraggablePlayer) => {
@@ -135,7 +138,7 @@ async function onMatchStart(randomizeMap: boolean) {
     position: "bottom-right",
   });
 
-  let response = await App.StartMatch(options);
+  const response = await App.StartMatch(options);
 
   if (response.success) {
     toast.success("Sent start match command", {
@@ -154,7 +157,7 @@ async function onMatchStop() {
   toast("Stopping match...", {
     position: "bottom-right",
   });
-  let response = await App.StopMatch(false);
+  const response = await App.StopMatch(false);
 
   if (response.success) {
     toast.success("Sent stop match command", {
@@ -213,6 +216,7 @@ function handleSearch(event: Event) {
             bind:mode
             bind:mutators={mutatorSettings}
             bind:extraOptions
+            bind:launcherOptionsVisible
         />
     </div>
 </div>

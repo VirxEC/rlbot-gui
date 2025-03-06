@@ -194,7 +194,7 @@ func (a *App) StartMatch(options StartMatchOptions) Result {
 		launcher = flat.LauncherEpic
 	case "custom":
 		launcher = flat.LauncherCustom
-	case "noLaunch":
+	case "nolaunch":
 		launcher = flat.LauncherNoLaunch
 	default:
 		println("No launcher chosen, defaulting to NoLaunch")
