@@ -21,6 +21,16 @@ export interface DraggablePlayer {
   icon: string;
   player: BotInfo | PsyonixBotInfo | HumanInfo;
   tags: string[];
+  uniquePathSegment?: string;
+}
+
+export interface ToggableScript {
+  id: number;
+  displayName: string;
+  icon: string;
+  config: BotInfo;
+  tags: string[];
+  uniquePathSegment?: string;
 }
 
 export function draggablePlayerToPlayerJs(d: DraggablePlayer): PlayerJs {

@@ -17,8 +17,14 @@ import MatchSettings from "../components/MatchSettings/Main.svelte";
 import PathsViewer from "../components/PathsViewer.svelte";
 // @ts-ignore
 import Teams from "../components/Teams/Main.svelte";
-import { type DraggablePlayer, draggablePlayerToPlayerJs } from "../index";
+import {
+  type DraggablePlayer,
+  draggablePlayerToPlayerJs,
+  type ToggableScript,
+} from "../index";
 import { mapStore } from "../settings";
+import BotpackNotif from "../components/BotpackToast.svelte";
+import { mutators as mutatorOptions } from "../components/MatchSettings/rlmutators";
 
 const backgroundImage =
   arenaImages[Math.floor(Math.random() * arenaImages.length)];
@@ -27,48 +33,188 @@ let paths: {
   tagName: string | null;
   repo: string | null;
   installPath: string;
+  visible: boolean;
 }[] = $state(
   JSON.parse(window.localStorage.getItem("BOT_SEARCH_PATHS") || "[]"),
 );
 
-let launcherOptionsVisible = $state(false);
-let players: DraggablePlayer[] = $state([...BASE_PLAYERS]);
-let selectedTeam = $state(null);
+let botpackNotifIds: { [repo: string]: string } = {};
 
-let loadingPlayers = $state(false);
-let latestBotUpdateTime = null;
+function updateBotpack(repoName: string) {
+  const notifId = botpackNotifIds[repoName];
+  if (notifId) {
+    toast.dismiss(notifId);
+  }
+
+  const details = paths.find((x) => x.repo === repoName);
+  if (details?.repo && details.tagName) {
+    const tId = toast.loading(`Updating ${repoName}...`, {
+      position: "bottom-right",
+    });
+
+    App.UpdateBotpack(details.repo, details.installPath, details.tagName)
+      .then((newTagName) => {
+        details.tagName = newTagName;
+        toast.success(`${repoName} updated successfully`, {
+          id: tId,
+          position: "bottom-right",
+          duration: 3000,
+        });
+      })
+      .catch((error) => {
+        console.error(error);
+        toast.error(`Failed to update ${repoName}: ${error}`, {
+          id: tId,
+          position: "bottom-right",
+          duration: 10000,
+        });
+      });
+  }
+}
+
+function CheckForBotpackUpdates() {
+  for (const path of paths) {
+    if (path.visible && path.repo && path.tagName) {
+      const repoName = path.repo;
+
+      App.CheckForNewRelease(repoName, path.tagName).then((release) => {
+        if (release) {
+          // @ts-ignore
+          const tId = toast(BotpackNotif, {
+            props: {
+              repoName,
+              updateBotpack,
+            },
+            style: "max-width: 500px",
+            position: "bottom-right",
+            duration: 10000,
+          });
+
+          botpackNotifIds[repoName] = tId;
+        }
+      });
+    }
+  }
+}
+
+CheckForBotpackUpdates();
+
+let launcherOptionsVisible = $state(false);
+let selectedTeam = $state(null);
 let showPathsViewer = $state(false);
+
+let latestBotUpdateTime = null;
+let loadingPlayers = $state(false);
+let players: DraggablePlayer[] = $state([...BASE_PLAYERS]);
+
+let latestScriptUpdateTime = null;
+let loadingScripts = $state(false);
+let scripts: ToggableScript[] = $state([]);
+let enabledScripts: { [key: number]: boolean } = $state({});
+
+function distinguishDuplicates(pool: BotInfo[]): [BotInfo, string?][] {
+  const uniqueNames = [
+    ...new Set(
+      pool.filter((bot) => bot.tomlPath).map((bot) => bot.config.settings.name),
+    ),
+  ];
+  const splitPath = (bot: BotInfo) => bot.tomlPath.split(/[\\|\/]/).reverse();
+
+  let uniquePathSegments: [BotInfo, string?][] = [];
+
+  for (const name of uniqueNames) {
+    const bots = pool.filter((bot) => bot.config.settings.name === name);
+    if (bots.length === 1) {
+      uniquePathSegments.push([bots[0]]);
+      continue;
+    }
+
+    for (let i = 0; bots.length > 0 && i < 99; i++) {
+      const pathSegments = bots.map((b) => splitPath(b)[i]);
+
+      for (const bot of bots.slice()) {
+        const path = splitPath(bot);
+        const count = pathSegments.filter((s) => s === path[i]).length;
+        if (count === 1) {
+          uniquePathSegments.push([bot, path[i]]);
+          bots.splice(bots.indexOf(bot), 1);
+        }
+      }
+    }
+  }
+
+  return uniquePathSegments;
+}
 
 async function updateBots() {
   loadingPlayers = true;
   let internalUpdateTime = new Date();
   latestBotUpdateTime = internalUpdateTime;
-  const result = await App.GetBots(paths.map((x) => x.installPath));
+  const result = await App.GetBots(
+    paths.filter((x) => x.visible).map((x) => x.installPath),
+  );
   if (latestBotUpdateTime !== internalUpdateTime) {
     return; // if newer "search" already started, dont write old data
   }
-  players = result.map((x: BotInfo) => {
-    // @ts-ignore
-    const n: typeof DraggablePlayer = {
+  players = distinguishDuplicates(result).map(([x, uniquePathSegment]) => {
+    return {
       displayName: x.config.settings.name,
       icon: x.config.settings.logoFile,
       player: new BotInfo(x),
       id: Math.random(),
       tags: x.config.details.tags,
+      uniquePathSegment,
     };
-    return n;
   });
   players = [...BASE_PLAYERS, ...players];
   loadingPlayers = false;
   console.log("Loaded bots:", result);
 }
 
+async function updateScripts() {
+  loadingScripts = true;
+  let internalUpdateTime = new Date();
+  latestScriptUpdateTime = internalUpdateTime;
+  const result = await App.GetScripts(
+    paths.filter((x) => x.visible).map((x) => x.installPath),
+  );
+  if (latestScriptUpdateTime !== internalUpdateTime) {
+    return; // if newer "search" already started, dont write old data
+  }
+  scripts = distinguishDuplicates(result).map(([x, uniquePathSegment]) => {
+    return {
+      id: Math.random(),
+      displayName: x.config.settings.name,
+      icon: x.config.settings.logoFile,
+      config: x,
+      tags: x.config.details.tags,
+      uniquePathSegment,
+    };
+  });
+
+  for (const script of scripts) {
+    if (enabledScripts[script.id] === undefined) {
+      enabledScripts[script.id] = false;
+    }
+  }
+
+  for (const id in Object.keys(enabledScripts)) {
+    if (!scripts.some((script) => script.id === Number(id))) {
+      delete enabledScripts[id];
+    }
+  }
+
+  loadingScripts = false;
+  console.log("Loaded scripts:", result);
+}
+
 $effect(() => {
-  window.localStorage.setItem("BOT_SEARCH_PATHS", JSON.stringify(paths));
+  localStorage.setItem("BOT_SEARCH_PATHS", JSON.stringify(paths));
   updateBots();
+  updateScripts();
 });
 
-let bluePlayers: DraggablePlayer[] = $state([]);
+let bluePlayers: DraggablePlayer[] = $state([BASE_PLAYERS[0]]);
 let orangePlayers: DraggablePlayer[] = $state([]);
 let showHuman = $state(true);
 $effect(() => {
@@ -84,8 +230,7 @@ $effect(() => {
 });
 let extraOptions = $state(
   JSON.parse(
-    localStorage.getItem("MS_EXTRAOPTIONS") ||
-      '{"enableStateSetting": true, "existingMatchBehavior": 0}',
+    localStorage.getItem("MS_EXTRAOPTIONS") || '{"enableStateSetting": true}',
   ),
 );
 $effect(() => {
@@ -97,6 +242,17 @@ let mutatorSettings = $state(
 $effect(() => {
   localStorage.setItem("MS_MUTATORS", JSON.stringify(mutatorSettings));
 });
+
+// function loadMutators() {
+//   let mutators = JSON.parse(localStorage.getItem("MS_MUTATORS") || "{}");
+//   // delete any mutators that are no longer in the list
+//   for (const key of Object.keys(mutators)) {
+//     if (!mutatorOptions[key]) {
+//       delete mutators[key];
+//     }
+//   }
+//   return mutators;
+// }
 
 async function onMatchStart(randomizeMap: boolean) {
   const launcher = localStorage.getItem("MS_LAUNCHER");
@@ -120,6 +276,7 @@ async function onMatchStart(randomizeMap: boolean) {
   const options: StartMatchOptions = {
     map: $mapStore,
     gameMode: mode,
+    scripts: scripts.filter((x) => enabledScripts[x.id]).map((x) => x.config),
     bluePlayers: bluePlayers.map((x: DraggablePlayer) => {
       // @ts-ignore
       return draggablePlayerToPlayerJs(x);
@@ -180,94 +337,96 @@ function handleSearch(event: Event) {
 </script>
 
 <div class="page" style={`background-image: url("${backgroundImage}")`}>
-    <div class="availableBots box">
-        <header>
-            <h1>Bots</h1>
-            <div class="dropdown">
-                <button onclick={() => { showPathsViewer = true }}>Add/Remove</button>
-            </div>
-            {#if loadingPlayers}
-                <h3>Searching...</h3>
-            {:else}
-                <button class="reloadButton" onclick={updateBots}
-                    ><img src={reloadIcon} alt="reload" /></button
-                >
-            {/if}
-            <div style="flex:1"></div>
-            <input type="text" class="botSearch" placeholder="Search..." oninput={handleSearch}/>
-        </header>
-        <BotList
-            bind:bluePlayers
-            bind:orangePlayers
-            bind:showHuman
-            items={players}
-            searchQuery={searchQuery}
-            selectedTeam={selectedTeam}
-        />
-    </div>
+  <div class="availableBots box">
+    <header>
+      <h1>Bots</h1>
+      <div class="dropdown">
+        <button onclick={() => { showPathsViewer = true }}>Add/Remove</button>
+      </div>
+      {#if loadingPlayers || loadingScripts}
+        <h3>Searching...</h3>
+      {:else}
+        <button class="reloadButton" onclick={updateBots}
+          ><img src={reloadIcon} alt="reload" /></button
+        >
+      {/if}
+      <div style="flex:1"></div>
+      <input type="text" class="botSearch" placeholder="Search..." oninput={handleSearch}/>
+    </header>
+    <BotList
+      bind:enabledScripts
+      bind:bluePlayers
+      bind:orangePlayers
+      bind:showHuman
+      bots={players}
+      scripts={scripts}
+      searchQuery={searchQuery}
+      selectedTeam={selectedTeam}
+    />
+  </div>
 
-    <div class="teams"><Teams bind:bluePlayers bind:orangePlayers bind:selectedTeam /></div>
+  <div class="teams"><Teams bind:bluePlayers bind:orangePlayers bind:selectedTeam /></div>
 
-    <div class="box">
-        <MatchSettings
-            onStart={onMatchStart}
-            onStop={onMatchStop}
-            bind:map={$mapStore}
-            bind:mode
-            bind:mutators={mutatorSettings}
-            bind:extraOptions
-            bind:launcherOptionsVisible
-        />
-    </div>
+  <div class="box">
+    <MatchSettings
+      onStart={onMatchStart}
+      onStop={onMatchStop}
+      bind:map={$mapStore}
+      bind:mode
+      bind:mutators={mutatorSettings}
+      bind:extraOptions
+      bind:launcherOptionsVisible
+    />
+  </div>
 </div>
 
-<PathsViewer bind:visible={showPathsViewer} bind:paths={paths} />
+<PathsViewer bind:visible={showPathsViewer} bind:paths />
 
 <style>
-    .page {
-        padding: 1rem;
-        height: 100%;
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        overflow: auto;
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-position: center;
-        background-attachment: fixed;
-    }
-    .page * {
-        user-select: none;
-        -webkit-user-select: none;
-    }
-    .box {
-        border-radius: 0.4rem;
-        background-color: var(--background);
-        padding: 0.6rem;
-    }
-    .page > div:not(:first-child) {
-        margin-top: 1rem;
-    }
-    .availableBots {
-        padding-bottom: 0.6rem;
-        display: flex;
-        flex-direction: column;
-    }
-    .availableBots header {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        margin-bottom: 0.6rem;
-    }
-    .reloadButton {
-        padding: 0px;
-    }
-    .reloadButton img {
-        filter: invert();
-    }
-    .teams {
-        overflow: auto;
-        display: flex;
-        flex-direction: column;
-    }
+  .page {
+    padding: 1rem;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: fixed;
+  }
+  .page * {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .box {
+    border-radius: 0.4rem;
+    background-color: var(--background);
+    padding: 0.6rem;
+  }
+  .page > div:not(:first-child) {
+    margin-top: 1rem;
+  }
+  .availableBots {
+    padding-bottom: 0.6rem;
+    display: flex;
+    flex-direction: column;
+  }
+  .availableBots header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.6rem;
+  }
+  .reloadButton {
+    padding: 0px;
+  }
+  .reloadButton img {
+    filter: invert();
+  }
+  .teams {
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+  }
 </style>

@@ -48,22 +48,9 @@ func (a *App) GetDefaultPath() string {
 }
 
 func (a *App) DownloadBotpack(repo string, installPath string) (string, error) {
-	var latest_release *GhRelease
-
-	for _, release := range a.latest_release_json {
-		if release.repo == repo {
-			latest_release = &release.content
-			break
-		}
-	}
-
-	if latest_release == nil {
-		content, err := a.GetLatestReleaseData(repo)
-		if err != nil {
-			return "", err
-		}
-
-		latest_release = content
+	latest_release, err := a.GetLatestReleaseData(repo)
+	if err != nil {
+		return "", err
 	}
 
 	var file_name string
@@ -81,12 +68,21 @@ func (a *App) DownloadBotpack(repo string, installPath string) (string, error) {
 		}
 	}
 
-	err := DownloadExtractArchive(download_url, installPath)
+	err = DownloadExtractArchive(download_url, installPath)
 	if err != nil {
 		return "", err
 	}
 
 	return latest_release.TagName, nil
+}
+
+func (a *App) RepairBotpack(repo string, installPath string) (string, error) {
+	err := os.RemoveAll(installPath)
+	if err != nil {
+		return "", err
+	}
+
+	return a.DownloadBotpack(repo, installPath)
 }
 
 // NewApp creates a new App application struct
@@ -104,7 +100,6 @@ func NewApp() *App {
 	rlbot_address := ip + ":" + port
 
 	var latest_release_json []RawReleaseInfo
-
 	return &App{
 		latest_release_json,
 		rlbot_address,
@@ -137,6 +132,7 @@ type Result struct {
 }
 
 type ExtraOptions struct {
+	Freeplay              bool `json:"freeplay"`
 	EnableRendering       bool `json:"enableRendering"`
 	EnableStateSetting    bool `json:"enableStateSetting"`
 	InstantStart          bool `json:"instantStart"`
@@ -148,6 +144,7 @@ type ExtraOptions struct {
 type StartMatchOptions struct {
 	Map             string                `json:"map"`
 	GameMode        string                `json:"gameMode"`
+	Scripts         []BotInfo             `json:"scripts"`
 	BluePlayers     []PlayerJs            `json:"bluePlayers"`
 	OrangePlayers   []PlayerJs            `json:"orangePlayers"`
 	MutatorSettings flat.MutatorSettingsT `json:"mutatorSettings"`
@@ -211,12 +208,19 @@ func (a *App) StartMatch(options StartMatchOptions) Result {
 		playerConfigs[i+len(options.BluePlayers)] = playerInfo.ToPlayer().ToPlayerConfig(1)
 	}
 
+	scriptConfigs := make([]*flat.ScriptConfigurationT, len(options.Scripts))
+	for i, info := range options.Scripts {
+		scriptConfigs[i] = info.ToScriptConfig()
+	}
+
 	match := flat.MatchConfigurationT{
 		AutoStartBots:         true,
 		GameMapUpk:            options.Map,
 		PlayerConfigurations:  playerConfigs,
+		ScriptConfigurations:  scriptConfigs,
 		GameMode:              gameMode,
 		Mutators:              &options.MutatorSettings,
+		Freeplay:              options.ExtraOptions.Freeplay,
 		EnableRendering:       options.ExtraOptions.EnableRendering,
 		EnableStateSetting:    options.ExtraOptions.EnableStateSetting,
 		InstantStart:          options.ExtraOptions.InstantStart,
@@ -244,12 +248,24 @@ func (a *App) StopMatch(shutdownServer bool) Result {
 	conn.SendPacket(&flat.StopCommandT{
 		ShutdownServer: shutdownServer,
 	})
+	conn.SendPacket(nil) // Tell core that we want to disconnect
 
 	return Result{true, ""}
 }
 
 func (a *App) PickFolder() string {
 	path, err := zenity.SelectFile(zenity.Directory())
+	if err != nil {
+		println("ERR: File picker failed")
+	}
+	return path
+}
+
+func (a *App) PickTomlFile() string {
+	path, err := zenity.SelectFile(zenity.FileFilter{
+		Name:     ".toml files",
+		Patterns: []string{"*.toml"},
+	})
 	if err != nil {
 		println("ERR: File picker failed")
 	}
@@ -271,7 +287,7 @@ func (a *App) ShowPathInExplorer(path string) error {
 	}
 
 	if runtime.GOOS == "windows" {
-		cmd := exec.Command("explorer", folder)
+		cmd := exec.Command("explorer.exe", folder)
 		err := cmd.Run()
 		if err != nil {
 			return err
