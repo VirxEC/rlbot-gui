@@ -13,6 +13,8 @@ import defaultIcon from "../assets/rlbot_mono.png";
 import type { DraggablePlayer, ToggableScript } from "../index";
 import Modal from "./Modal.svelte";
 import Switch from "./Switch.svelte";
+//@ts-ignore
+import LoadoutEditor from "./LoadoutEditor/Main.svelte";
 
 let {
   bots = [],
@@ -63,7 +65,16 @@ const subCategories: { [x: string]: string[] } = {
   ],
 };
 
-let showModal = $state(false);
+let showLoadoutEditor = $state(false);
+let showInfoModal = $state(false);
+let infoModalWasOpen = false;
+$effect(() => {
+  if (!showLoadoutEditor && infoModalWasOpen) {
+    showInfoModal = true;
+    infoModalWasOpen = false;
+  }
+});
+
 let selectedBot: [BotInfo, string, string] | null = $state(null);
 
 let filteredBots: DraggablePlayer[] = $state([]);
@@ -219,20 +230,20 @@ function handleBotClick(bot: DraggablePlayer) {
   }
 }
 
-function ToggableScript(id: number) {
+function ToggleScript(id: number) {
   enabledScripts[id] = !enabledScripts[id];
 }
 
 function handleBotInfoClick(bot: DraggablePlayer) {
   if (bot.player instanceof BotInfo) {
     selectedBot = [bot.player, bot.displayName, bot.icon];
-    showModal = true;
+    showInfoModal = true;
   }
 }
 
 function handleScriptInfoClick(script: ToggableScript) {
   selectedBot = [script.config, script.displayName, script.icon];
-  showModal = true;
+  showInfoModal = true;
 }
 
 function OpenSelectedBotSource() {
@@ -241,9 +252,11 @@ function OpenSelectedBotSource() {
   }
 }
 
-function EditSelectedBotAppearance() {
+function EditSelectedBotLoadout() {
   if (selectedBot) {
-    alert.bind(null, "Not implemented yet")();
+    infoModalWasOpen = showInfoModal;
+    showInfoModal = false;
+    showLoadoutEditor = true;
   }
 }
 
@@ -331,12 +344,12 @@ function ShowSelectedBotFiles() {
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   {#each filteredScripts as script (script.id)}
-    <div class="bot" animate:flip={{ duration: flipDurationMs }} onclick={() => ToggableScript(script.id)}>
+    <div class="bot" animate:flip={{ duration: flipDurationMs }} onclick={() => ToggleScript(script.id)}>
       <Switch
         checked={enabledScripts[script.id]}
         width={36}
         height={22}
-        onchange={() => ToggableScript(script.id)}
+        onchange={() => ToggleScript(script.id)}
       />
       <img src={script.icon || defaultIcon} alt="icon" />
       <p>{script.displayName}</p>
@@ -350,7 +363,7 @@ function ShowSelectedBotFiles() {
   {/each}
 </div>
 
-<Modal title={selectedBot ? selectedBot[1] : ""} bind:visible={showModal}>
+<Modal title={selectedBot ? selectedBot[1] : ""} bind:visible={showInfoModal}>
 {#if selectedBot}
   <div class="modal-content">
     <div class="bot-left-column">
@@ -372,11 +385,6 @@ function ShowSelectedBotFiles() {
         {/each}
       </div>
       {/if}
-      <p id="toml-path">{selectedBot[0].tomlPath}</p>
-      <div id="button-group">
-        <button onclick={EditSelectedBotAppearance}>Edit Appearance</button>
-        <button onclick={ShowSelectedBotFiles}>Show Files</button>
-      </div>
     </div>
     {#if selectedBot[2]}
     <div class="bot-right-column">
@@ -384,8 +392,28 @@ function ShowSelectedBotFiles() {
     </div>
     {/if}
   </div>
+  <div class="bot-footer">
+    <p id="toml-path">{selectedBot[0].tomlPath}</p>
+    <div id="button-group">
+      <button onclick={EditSelectedBotLoadout}>Edit Loadout</button>
+      <button onclick={ShowSelectedBotFiles}>Show Files</button>
+    </div>
+  </div>
 {/if}
 </Modal>
+
+<LoadoutEditor
+  bind:visible={showLoadoutEditor}
+  name={selectedBot ? selectedBot[1] : ""}
+  loadoutBackup={selectedBot ? selectedBot[0].loadout ?? null : null}
+  blueLoadout={selectedBot ? structuredClone(selectedBot[0].loadout?.blueLoadout) ?? null : null}
+  orangeLoadout={selectedBot ? structuredClone(selectedBot[0].loadout?.orangeLoadout) ?? null : null}
+  onsave={(loadout) => {
+    if (selectedBot) {
+      selectedBot[0].loadout = loadout;
+    }
+  }}
+/>
 
 <style>
   .bots span {
@@ -465,26 +493,34 @@ function ShowSelectedBotFiles() {
   }
   .tags {
     display: flex;
+    align-items: center;
     flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 1rem;
   }
   .tag {
     background-color: grey;
     color: white;
     padding: 0.2rem 0.5rem;
     border-radius: 0.25rem;
+    margin: 0 0.3rem;
   }
   .modal-content {
     display: flex;
     flex-direction: row;
     gap: 1rem;
+    max-width: 900px;
+  }
+  @media (max-width: 800px) {
+    .modal-content {
+      flex-wrap: wrap;
+    }
+    .bot-right-column {
+      width: 100%;
+    }
   }
   .bot-left-column {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    max-width: 60vw;
   }
   .bot-right-column {
     display: flex;
@@ -495,6 +531,12 @@ function ShowSelectedBotFiles() {
     max-height: 250px;
     max-width: 250px;
     width: auto;
+  }
+  .bot-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1rem;
   }
   .unique-bot-identifier {
     color: #868686;

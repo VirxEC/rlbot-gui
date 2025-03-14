@@ -24,7 +24,6 @@ import {
 } from "../index";
 import { mapStore } from "../settings";
 import BotpackNotif from "../components/BotpackToast.svelte";
-import { mutators as mutatorOptions } from "../components/MatchSettings/rlmutators";
 
 const backgroundImage =
   arenaImages[Math.floor(Math.random() * arenaImages.length)];
@@ -425,6 +424,7 @@ function handleSearch(event: Event) {
     filter: invert();
   }
   .teams {
+    min-height: 93px;
     overflow: auto;
     display: flex;
     flex-direction: column;
