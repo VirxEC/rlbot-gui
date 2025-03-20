@@ -1,12 +1,12 @@
 import "./global.css";
-import App from "./App.svelte";
 import { mount } from "svelte";
 import {
   BotInfo,
+  HumanInfo,
   type PlayerJs,
   PsyonixBotInfo,
-  HumanInfo,
 } from "../bindings/gui";
+import App from "./App.svelte";
 
 const app: any = mount(App, {
   target: document.body,
@@ -24,7 +24,7 @@ export interface DraggablePlayer {
   uniquePathSegment?: string;
 }
 
-export interface ToggableScript {
+export interface ToggleableScript {
   id: number;
   displayName: string;
   icon: string;

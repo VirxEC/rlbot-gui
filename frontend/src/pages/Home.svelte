@@ -12,19 +12,19 @@ import { MAPS_STANDARD } from "../arena-names";
 import reloadIcon from "../assets/reload.svg";
 import { BASE_PLAYERS } from "../base-players";
 import BotList from "../components/BotList.svelte";
+import BotpackNotif from "../components/BotpackToast.svelte";
 // @ts-ignore
 import MatchSettings from "../components/MatchSettings/Main.svelte";
+import { mutators as mutatorOptions } from "../components/MatchSettings/rlmutators";
 import PathsViewer from "../components/PathsViewer.svelte";
 // @ts-ignore
 import Teams from "../components/Teams/Main.svelte";
 import {
   type DraggablePlayer,
+  type ToggleableScript,
   draggablePlayerToPlayerJs,
-  type ToggableScript,
 } from "../index";
 import { mapStore } from "../settings";
-import BotpackNotif from "../components/BotpackToast.svelte";
-import { mutators as mutatorOptions } from "../components/MatchSettings/rlmutators";
 
 const backgroundImage =
   arenaImages[Math.floor(Math.random() * arenaImages.length)];
@@ -109,7 +109,7 @@ let players: DraggablePlayer[] = $state([...BASE_PLAYERS]);
 
 let latestScriptUpdateTime = null;
 let loadingScripts = $state(false);
-let scripts: ToggableScript[] = $state([]);
+let scripts: ToggleableScript[] = $state([]);
 let enabledScripts: { [key: number]: boolean } = $state({});
 
 function distinguishDuplicates(pool: BotInfo[]): [BotInfo, string?][] {
