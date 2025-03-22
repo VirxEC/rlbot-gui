@@ -1,10 +1,10 @@
 <script lang="ts">
-import Modal from "./Modal.svelte";
-import CalendarPlusIcon from "../assets/calendar-plus.svg";
+import { Browser } from "@wailsio/runtime";
 import AlarmIcon from "../assets/alarm.svg";
+import CalendarPlusIcon from "../assets/calendar-plus.svg";
 import GeoIcon from "../assets/geo.svg";
 import InfoIcon from "../assets/info_icon.svg";
-import { Browser } from "@wailsio/runtime";
+import Modal from "./Modal.svelte";
 
 let {
   visible = $bindable(false),
