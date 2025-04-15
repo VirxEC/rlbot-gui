@@ -1,6 +1,6 @@
 <script lang="ts">
 import toast from "svelte-5-french-toast";
-import { ExistingMatchBehavior } from "../../../bindings/github.com/swz-git/go-interface/flat/models";
+import { ExistingMatchBehavior } from "../../../bindings/github.com/RLBot/go-interface/flat/models";
 import {
   App,
   LoadoutConfig,

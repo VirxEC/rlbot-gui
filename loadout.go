@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 
 	"github.com/BurntSushi/toml"
-	rlbot "github.com/swz-git/go-interface"
-	"github.com/swz-git/go-interface/flat"
+	rlbot "github.com/RLBot/go-interface"
+	"github.com/RLBot/go-interface/flat"
 )
 
 func (a *App) SaveLoadoutToFile(basePath string, loadoutFile string, loadout LoadoutConfig) error {

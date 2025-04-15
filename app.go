@@ -8,9 +8,9 @@ import (
 	"runtime"
 	"strings"
 
+	rlbot "github.com/RLBot/go-interface"
+	"github.com/RLBot/go-interface/flat"
 	"github.com/ncruces/zenity"
-	rlbot "github.com/swz-git/go-interface"
-	"github.com/swz-git/go-interface/flat"
 )
 
 type RawReleaseInfo struct {

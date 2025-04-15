@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	rlbot "github.com/swz-git/go-interface"
-	"github.com/swz-git/go-interface/flat"
+	rlbot "github.com/RLBot/go-interface"
+	"github.com/RLBot/go-interface/flat"
 )
 
 type RHostBot struct {

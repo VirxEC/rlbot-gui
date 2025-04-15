@@ -10,7 +10,7 @@ import (
 	"sort"
 
 	"github.com/BurntSushi/toml"
-	"github.com/swz-git/go-interface/flat"
+	"github.com/RLBot/go-interface/flat"
 	"github.com/wailsapp/mimetype"
 )
 
