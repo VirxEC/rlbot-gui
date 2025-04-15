@@ -1,6 +1,10 @@
-# rlbot gui
+# rlbot/gui
 
-A GUI for [RLBot](https://rlbot.org) v5 written in go and powered by [wails](https://wails.io) (v3 alpha).
+A GUI for [RLBot](https://rlbot.org) v5. Built with:
+
+* [Go](https://golang.org)
+* [Wails](https://v3alpha.wails.io) (v3 alpha).
+* [Svelte](https://svelte.dev)
 
 ## Info
 
@@ -15,4 +19,4 @@ and `just format` to format. Remember to [install dependencies](#Installing-buil
 
 ## Linux runtime dependencies
 
-* Either [zenity, matedialog or garma](https://github.com/ncruces/zenity?tab=readme-ov-file#benefits-of-the-go-package)
+* Either [zenity, matedialog or qarma](https://github.com/ncruces/zenity?tab=readme-ov-file#benefits-of-the-go-package)
