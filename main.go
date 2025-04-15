@@ -4,6 +4,9 @@ import (
 	"embed"
 	"log"
 	"log/slog"
+	"os"
+	"os/exec"
+	"strings"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 	// "github.com/wailsapp/wails/v3/pkg/options"
@@ -13,7 +16,24 @@ import (
 //go:embed all:frontend/dist
 var assets embed.FS
 
+func check_nvidia() bool {
+	cmd := exec.Command("nvidia-smi")
+	output, err := cmd.CombinedOutput()
+
+	if err != nil {
+		// nvidia-smi likely not installed or not in PATH
+		return false
+	}
+
+	return strings.Contains(string(output), "NVIDIA")
+}
+
 func main() {
+	// see https://github.com/tauri-apps/tauri/issues/9394
+	if check_nvidia() {
+		os.Setenv("WEBKIT_DISABLE_DMABUF_RENDERER", "1")
+	}
+
 	// Create an instance of the app structure
 	app := application.New(application.Options{
 		Name: "rlbotgui",
@@ -31,7 +51,7 @@ func main() {
 		Title:     "RLBotGUI",
 		Width:     1300,
 		Height:    870,
-		MinWidth:  600,
+		MinWidth:  650,
 		MinHeight: 400,
 		// AssetServer: &assetserver.Options{
 		// 	Assets: assets,
