@@ -193,7 +193,7 @@ async function updateScripts() {
   }
   scripts = distinguishDuplicates(result).map(([x, uniquePathSegment]) => {
     return {
-      id: uuidv4(),
+      id: crypto.randomUUID(),
       displayName: x.config.settings.name,
       icon: x.config.settings.logoFile,
       config: x,

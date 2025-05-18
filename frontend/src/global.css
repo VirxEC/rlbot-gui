@@ -80,6 +80,7 @@ button {
   border-radius: 0.25rem;
   font-size: 1rem;
   transition: 150ms;
+  user-select: none;
 }
 button[type="submit"] {
   background-color: #1a6a1d;
