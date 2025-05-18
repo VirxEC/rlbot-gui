@@ -159,25 +159,30 @@ async function updateBots() {
   loadingPlayers = true;
   const internalUpdateTime = new Date();
   latestBotUpdateTime = internalUpdateTime;
+
+  players = [...BASE_PLAYERS.slice(1)];
+
   const result = await App.GetBots(
     paths.filter((x) => x.visible).map((x) => x.installPath),
   );
+
   if (latestBotUpdateTime !== internalUpdateTime) {
     return; // if newer "search" already started, dont write old data
   }
-  players = distinguishDuplicates(result).map(([x, uniquePathSegment]) => {
-    return {
-      displayName: x.config.settings.name,
-      icon: x.config.settings.logoFile,
-      player: new BotInfo(x),
-      id: crypto.randomUUID(),
-      tags: x.config.details.tags,
-      uniquePathSegment,
-      modified: false,
-    };
-  });
+  players = players.concat(
+    distinguishDuplicates(result).map(([x, uniquePathSegment]) => {
+      return {
+        displayName: x.config.settings.name,
+        icon: x.config.settings.logoFile,
+        player: new BotInfo(x),
+        id: crypto.randomUUID(),
+        tags: x.config.details.tags,
+        uniquePathSegment,
+        modified: false,
+      };
+    }),
+  );
 
-  players = [...BASE_PLAYERS.slice(1), ...players];
   loadingPlayers = false;
 }
 
@@ -233,28 +238,14 @@ $effect(() => {
   localStorage.setItem("MS_MODE", mode);
 });
 
-function loadExtraOptions(): ExtraOptions {
-  let extraOptions = JSON.parse(
-    localStorage.getItem("MS_EXTRAOPTIONS") || '{"existingMatchBehavior": 0}',
-  );
-
-  // old versions of the GUI will have MS_EXTRAOPTIONS but might not have these values,
-  // and they should default to true
-  const newDefaultTrue = [
-    "autoStartAgents",
-    "waitForAgents",
-    "enableStateSetting",
-  ];
-  for (const item of newDefaultTrue) {
-    if (extraOptions[item] === undefined) {
-      extraOptions[item] = true;
-    }
-  }
-
-  return extraOptions;
-}
-
-let extraOptions = $state(loadExtraOptions());
+let extraOptions: ExtraOptions = $state({
+  existingMatchBehavior: 0,
+  enableStateSetting: true,
+  autoStartAgents: true,
+  waitForAgents: true,
+  // rest are fine with being nullish
+  ...JSON.parse(localStorage.getItem("MS_EXTRAOPTIONS") || "{}"),
+});
 $effect(() => {
   localStorage.setItem("MS_EXTRAOPTIONS", JSON.stringify(extraOptions));
 });
@@ -354,12 +345,14 @@ function handleSearch(event: Event) {
       <div class="dropdown">
         <button onclick={() => { showPathsViewer = true }}>Add/Remove</button>
       </div>
+      <button
+        class="reloadButton"
+        title="(note: you need to re-add a bot to a team to apply changes)"
+        onclick={loadPaths}
+        disabled={loadingPlayers || loadingScripts}
+      ><img src={reloadIcon} alt="reload" /></button>
       {#if loadingPlayers || loadingScripts}
         <h3>Searching...</h3>
-      {:else}
-        <button class="reloadButton" onclick={loadPaths}
-          ><img src={reloadIcon} alt="reload" /></button
-        >
       {/if}
       <div style="flex:1"></div>
       <input type="text" class="botSearch" placeholder="Search..." oninput={handleSearch}/>

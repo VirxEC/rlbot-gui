@@ -85,11 +85,14 @@ button {
 button[type="submit"] {
   background-color: #1a6a1d;
 }
-button:hover {
+button:hover:not([disabled]) {
   box-shadow: 0px 0px 8rem 0px rgba(150, 150, 150, 0.25) inset;
 }
-button:active {
+button:active:not([disabled]) {
   border: solid 1px var(--foreground-alt);
+}
+button[disabled] {
+  filter: brightness(0.8);
 }
 
 /* Input styling */

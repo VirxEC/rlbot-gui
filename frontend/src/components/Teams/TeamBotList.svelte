@@ -70,7 +70,6 @@ async function edit_custom_bot(id: string): Promise<void> {
 
   let modified = await modal.prompt();
   if (modified) {
-    console.log(modified);
     const index = items.findIndex((x) => x.id === id);
     let copy = {
       ...items[index],
@@ -150,6 +149,8 @@ async function edit_custom_bot(id: string): Promise<void> {
         id={`edit-name-${bot.id}`}
         bind:value={editDataNames[bot.id]}
       >
+      <!-- TODO: Add a bunch of more stuff to edit, loadout etc -->
+      <!-- TODO: Perhaps add a way to save mods to bots as new tomls? -->
     </div>
   </ModalPrompt>
 {/each}
