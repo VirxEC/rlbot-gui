@@ -23,7 +23,6 @@ import {
   type DraggablePlayer,
   type ToggleableScript,
   draggablePlayerToPlayerJs,
-  uuidv4,
 } from "../index";
 import { mapStore } from "../settings";
 
@@ -171,7 +170,7 @@ async function updateBots() {
       displayName: x.config.settings.name,
       icon: x.config.settings.logoFile,
       player: new BotInfo(x),
-      id: uuidv4(),
+      id: crypto.randomUUID(),
       tags: x.config.details.tags,
       uniquePathSegment,
       modified: false,
