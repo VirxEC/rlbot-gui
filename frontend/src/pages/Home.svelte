@@ -307,7 +307,7 @@ async function onMatchStart(randomizeMap: boolean) {
 
   const response = await App.StartMatch(options);
 
-  if (toastId != startMatchToastId) return;
+  if (toastId !== startMatchToastId) return;
   startMatchToastId = null;
 
   if (response.success) {

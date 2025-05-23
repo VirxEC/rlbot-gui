@@ -4,6 +4,7 @@ import AlarmIcon from "./assets/alarm.svg";
 import CalendarPlusIcon from "./assets/calendar-plus.svg";
 import logo from "./assets/rlbot_logo.svg";
 import Events from "./components/Events.svelte";
+import GuiSettings from "./components/GuiSettings.svelte";
 import Home from "./pages/Home.svelte";
 import RocketHost from "./pages/RocketHost.svelte";
 import StoryMode from "./pages/StoryMode.svelte";
@@ -13,6 +14,8 @@ let activePage = $state("home");
 let eventsNow = $state(0);
 let eventsFuture = $state(0);
 let eventsVisible = $state(false);
+
+let showGuiSettings = $state(false);
 </script>
 
 <Toaster />
@@ -73,6 +76,10 @@ let eventsVisible = $state(false);
             onclick={alert.bind(null, "TODO: not implemented yet")}
             >State Setting Sandbox</button
           >
+          <button
+            onclick={()=>{showGuiSettings = true}}
+            >GUI Settings</button
+          >
         </div>
       </div>
     </div>
@@ -98,6 +105,7 @@ let eventsVisible = $state(false);
 </main>
 
 <Events bind:visible={eventsVisible} bind:eventsNow bind:eventsFuture />
+<GuiSettings bind:visible={showGuiSettings} />
 
 <style>
   main {
