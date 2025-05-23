@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 
 	rlbot "github.com/RLBot/go-interface"
 	"github.com/RLBot/go-interface/flat"
@@ -156,34 +157,78 @@ type StartMatchOptions struct {
 	LauncherArg     string                `json:"launcherArg"`
 }
 
-func WaitForMatchReady(conn *rlbot.RLBotConnection, expectedMatchConfig *flat.MatchConfigurationT) error {
-	// wait for the correct match to start
+func WaitForMatchReady(
+	conn *rlbot.RLBotConnection,
+	expectedMatchConfig *flat.MatchConfigurationT,
+	matchStartDur time.Duration,
+	matchReadyDur time.Duration,
+) error {
+	packetChan := make(chan interface{})
+
+	// Goroutine to continuously receive packets from the connection
+	go func() {
+		for {
+			packet, err := conn.RecvPacket() // This is the blocking call
+			if err != nil {
+				packetChan <- fmt.Errorf("error receiving packet: %w", err) // Send the error to the channel
+				return                                                      // Exit goroutine on error
+			}
+			packetChan <- packet // Send the received packet to the channel
+		}
+	}()
+
 	var matchConfig *flat.MatchConfigurationT
 	var gamePacket *flat.GamePacketT
-	for matchConfig == nil || gamePacket == nil {
-		packet, err := conn.RecvPacket()
-		if err != nil {
-			return err
-		}
 
-		switch packet := packet.(type) {
-		case *flat.MatchConfigurationT:
-			matchConfig = packet
-		case *flat.GamePacketT:
-			gamePacket = packet
+	// First wait: for initial MatchConfigurationT and GamePacketT, or timeout (matchStartDur)
+	timer1 := time.NewTimer(matchStartDur)
+	defer timer1.Stop() // Ensure timer is stopped when the function exits
+
+	for matchConfig == nil || gamePacket == nil {
+		select {
+		case item := <-packetChan: // Receive either packet or error
+			if err, ok := item.(error); ok {
+				return err // Propagate the error from the goroutine
+			}
+			packet := item // Otherwise, it's a packet
+
+			switch packet := packet.(type) {
+			case *flat.MatchConfigurationT:
+				matchConfig = packet
+			case *flat.GamePacketT:
+				gamePacket = packet
+			}
+		case <-timer1.C:
+			conn.SendPacket(nil);
+			return fmt.Errorf("Timed out waiting for match start after %s", matchStartDur)
 		}
 	}
 
-	// while the match isn't active or the car is on the wrong team
-	for gamePacket.MatchInfo.MatchPhase == flat.MatchPhaseEnded || gamePacket.MatchInfo.MatchPhase == flat.MatchPhaseInactive || gamePacket.MatchInfo.MatchPhase == flat.MatchPhasePaused {
-		packet, err := conn.RecvPacket()
-		if err != nil {
-			return err
-		}
+	// Second wait: for GamePacketT to indicate an active match phase, or timeout (matchReadyDur)
+	timer2 := time.NewTimer(matchReadyDur)
+	defer timer2.Stop()
 
-		switch packet := packet.(type) {
-		case *flat.GamePacketT:
-			gamePacket = packet
+	for gamePacket.MatchInfo.MatchPhase == flat.MatchPhaseEnded ||
+		gamePacket.MatchInfo.MatchPhase == flat.MatchPhaseInactive ||
+		gamePacket.MatchInfo.MatchPhase == flat.MatchPhasePaused {
+		select {
+		case item := <-packetChan: // Receive either packet or error
+			if err, ok := item.(error); ok {
+				return err // Propagate the error from the goroutine
+			}
+			packet := item
+
+			switch packet := packet.(type) {
+			case *flat.GamePacketT:
+				gamePacket = packet
+				// Ignore other packet types in this phase
+			}
+		case <-timer2.C:
+			conn.SendPacket(nil);
+			return fmt.Errorf(
+				"Timed out waiting for match ready after %s",
+				matchReadyDur,
+			)
 		}
 	}
 
@@ -194,7 +239,10 @@ func (a *App) StartMatch(options StartMatchOptions) Result {
 	// TODO: Save this in App struct
 	conn, err := rlbot.Connect(a.rlbot_address)
 	if err != nil {
-		return Result{false, "Failed to connect to RLBotServer at " + a.rlbot_address}
+		return Result{
+			false,
+			"Failed to connect to RLBotServer at " + a.rlbot_address,
+		}
 	}
 
 	var gameMode flat.GameMode
@@ -235,7 +283,8 @@ func (a *App) StartMatch(options StartMatchOptions) Result {
 		launcher = flat.LauncherNoLaunch
 	}
 
-	playerConfigs := make([]*flat.PlayerConfigurationT, len(options.BluePlayers)+len(options.OrangePlayers))
+	playerConfigs :=
+		make([]*flat.PlayerConfigurationT, len(options.BluePlayers)+len(options.OrangePlayers))
 
 	for i, playerInfo := range options.BluePlayers {
 		playerConfigs[i] = playerInfo.ToPlayer().ToPlayerConfig(0)
@@ -245,7 +294,8 @@ func (a *App) StartMatch(options StartMatchOptions) Result {
 		playerConfigs[i+len(options.BluePlayers)] = playerInfo.ToPlayer().ToPlayerConfig(1)
 	}
 
-	scriptConfigs := make([]*flat.ScriptConfigurationT, len(options.Scripts))
+	scriptConfigs :=
+		make([]*flat.ScriptConfigurationT, len(options.Scripts))
 	for i, info := range options.Scripts {
 		scriptConfigs[i] = info.ToScriptConfig()
 	}
@@ -278,7 +328,13 @@ func (a *App) StartMatch(options StartMatchOptions) Result {
 		CloseBetweenMatches:  false,
 	})
 	conn.SendPacket(&flat.InitCompleteT{})
-	err = WaitForMatchReady(&conn, &match)
+	// Using the new function with a 30-second timeout
+	err = WaitForMatchReady(
+		&conn,
+		&match,
+		120*time.Second,
+		20*time.Second,
+	)
 	if err != nil {
 		return Result{false, err.Error()}
 	}
@@ -322,7 +378,9 @@ func (a *App) PickRLBotToml() (string, error) {
 	}
 
 	filename := filepath.Base(path)
-	if filename == "bot.toml" || filename == "script.toml" || strings.HasSuffix(filename, ".bot.toml") || strings.HasSuffix(filename, ".script.toml") {
+	if  filename == "bot.toml" || filename == "script.toml" ||
+	 	strings.HasSuffix(filename, ".bot.toml") ||
+		strings.HasSuffix(filename, ".script.toml") {
 		return path, nil
 	}
 
