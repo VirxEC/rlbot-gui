@@ -166,7 +166,7 @@ let showGuiSettings = $state(false);
     width: 100%;
     background: inherit;
     visibility: visible;
-    overflow: scroll;
+    overflow: auto;
   }
   .hidden {
     opacity: 0;
