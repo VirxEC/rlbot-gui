@@ -1,4 +1,4 @@
-import { type DraggablePlayer } from ".";
+import type { DraggablePlayer } from ".";
 import { HumanInfo, PsyonixBotInfo } from "../bindings/gui";
 import controller from "./assets/controller.svg";
 

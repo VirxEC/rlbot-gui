@@ -6,6 +6,7 @@ import {
   App,
   BotInfo,
   ExtraOptions,
+  PlayerJs,
   type StartMatchOptions,
 } from "../../bindings/gui/index.js";
 import arenaImages from "../arena-images";
@@ -277,18 +278,24 @@ async function onMatchStart(randomizeMap: boolean) {
       ];
   }
 
+  function playerMap(draggable: DraggablePlayer): PlayerJs {
+    let clone = { ...draggable };
+    if (clone.player instanceof BotInfo) {
+      clone.player = BotInfo.createFrom(structuredClone(clone.player));
+      // We don't need to know the icon to start a bot.
+      // This fixes oversized requests that result in a CORS error on windows (WebView2)
+      // TODO: There is probably a better way to do this.
+      (clone.player as BotInfo).config.settings.logoFile = "";
+    }
+    return draggablePlayerToPlayerJs(clone);
+  }
+
   const options: StartMatchOptions = {
     map: $mapStore,
     gameMode: mode,
     scripts: scripts.filter((x) => enabledScripts[x.id]).map((x) => x.config),
-    bluePlayers: bluePlayers.map((x: DraggablePlayer) => {
-      // @ts-ignore
-      return draggablePlayerToPlayerJs(x);
-    }),
-    orangePlayers: orangePlayers.map((x: DraggablePlayer) => {
-      // @ts-ignore
-      return draggablePlayerToPlayerJs(x);
-    }),
+    bluePlayers: bluePlayers.map(playerMap),
+    orangePlayers: orangePlayers.map(playerMap),
     launcher,
     launcherArg: localStorage.getItem("MS_LAUNCHER_ARG") || "",
     mutatorSettings,
