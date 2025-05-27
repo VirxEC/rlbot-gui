@@ -199,7 +199,7 @@ func WaitForMatchReady(
 				gamePacket = packet
 			}
 		case <-timer1.C:
-			conn.SendPacket(nil);
+			conn.SendPacket(nil)
 			return fmt.Errorf("Timed out waiting for match start after %s", matchStartDur)
 		}
 	}
@@ -224,7 +224,7 @@ func WaitForMatchReady(
 				// Ignore other packet types in this phase
 			}
 		case <-timer2.C:
-			conn.SendPacket(nil);
+			conn.SendPacket(nil)
 			return fmt.Errorf(
 				"Timed out waiting for match ready after %s",
 				matchReadyDur,
@@ -378,8 +378,8 @@ func (a *App) PickRLBotToml() (string, error) {
 	}
 
 	filename := filepath.Base(path)
-	if  filename == "bot.toml" || filename == "script.toml" ||
-	 	strings.HasSuffix(filename, ".bot.toml") ||
+	if filename == "bot.toml" || filename == "script.toml" ||
+		strings.HasSuffix(filename, ".bot.toml") ||
 		strings.HasSuffix(filename, ".script.toml") {
 		return path, nil
 	}

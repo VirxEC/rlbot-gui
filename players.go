@@ -65,7 +65,7 @@ func (info PsyonixBotInfo) ToPlayerConfig(team uint32) *flat.PlayerConfiguration
 		Team:       team,
 		RootDir:    "",
 		RunCommand: "",
-		Loadout:    &flat.PlayerLoadoutT{},
+		Loadout:    nil,
 		SpawnId:    0,
 		Hivemind:   false,
 	}
@@ -83,7 +83,7 @@ func (info HumanInfo) ToPlayerConfig(team uint32) *flat.PlayerConfigurationT {
 		Team:       team,
 		RootDir:    "",
 		RunCommand: "",
-		Loadout:    &flat.PlayerLoadoutT{},
+		Loadout:    nil,
 		SpawnId:    0,
 		Hivemind:   false,
 	}
