@@ -90,7 +90,7 @@ async function edit_custom_bot(id: string): Promise<void> {
   <p
       class="placeholder"
       style={items.length == 0
-          ? "margin-top:.6rem;"
+          ? ""
           : "opacity: 0;z-index: -999"}
   >
       Drop bots here...
@@ -164,13 +164,22 @@ async function edit_custom_bot(id: string): Promise<void> {
     padding: 0.6rem;
     overflow: auto;
     height: 100%;
-    min-height: 4rem;
+    min-height: 8rem;
+    max-height: 12rem;
     display: flex;
     flex-direction: column;
     position: relative;
   }
   .placeholder {
     position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.1rem;
+    font-style: italic;
+    opacity: 0.8;
+    max-width: 90%;
+    width: max-content;
     transition: 100ms;
   }
   .bots {
@@ -179,6 +188,7 @@ async function edit_custom_bot(id: string): Promise<void> {
     gap: 0.5rem;
     min-height: 100%;
     overflow-y: auto;
+    padding-bottom: 1rem;
   }
   .bot {
     display: flex;
