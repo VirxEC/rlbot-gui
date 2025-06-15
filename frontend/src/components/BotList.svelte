@@ -1,11 +1,8 @@
 <script lang="ts">
+import { draggable, droppable } from "@thisux/sveltednd";
 import { Browser } from "@wailsio/runtime";
+import SuperJSON from "superjson";
 import toast from "svelte-5-french-toast";
-import {
-  SHADOW_ITEM_MARKER_PROPERTY_NAME,
-  TRIGGERS,
-  dndzone,
-} from "svelte-dnd-action";
 import { flip } from "svelte/animate";
 import { App, BotInfo } from "../../bindings/gui";
 import infoIcon from "../assets/info_icon.svg";
@@ -215,25 +212,6 @@ function handleSubTagClick(tag: string) {
   selectedTags[1] = selectedTags[1] === tag ? null : tag;
 }
 
-function handleDndConsider(e: any) {
-  const { trigger, id } = e.detail.info;
-  if (trigger === TRIGGERS.DRAG_STARTED) {
-    const idx = bots.findIndex((bot) => bot.id === id);
-    if (idx !== -1) {
-      // trigger an update of filteredBots by updating bots
-      bots = [
-        ...bots.slice(0, idx),
-        { ...bots[idx], id: crypto.randomUUID() },
-        ...bots.slice(idx + 1),
-      ];
-    } else {
-      // idx is -1 when the picked item is the human
-      // trigger an update of filteredBots by hiding the human
-      showHuman = false;
-    }
-  }
-}
-
 function handleBotClick(bot: DraggablePlayer) {
   const newId = crypto.randomUUID();
 
@@ -327,19 +305,23 @@ function SelectedToggleFavorite() {
 
 <div
   class="bots"
-  use:dndzone={{
-    items: filteredBots,
-    flipDurationMs,
-    centreDraggedOnCursor: true,
-    dropTargetStyle: {},
-    dropTargetClasses: ["dropTarget"],
-  }}
-  onconsider={handleDndConsider}
+  use:droppable={{container: "botlist"}}
 >
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   {#each filteredBots as bot (bot.id)}
-    <div class="bot" animate:flip={{ duration: flipDurationMs }} onclick={() => handleBotClick(bot)}>
+    <div
+      class="bot"
+      use:draggable={{
+        container: "botlist",
+        dragData: SuperJSON.stringify(bot),
+        callbacks: {
+          // onDragEnd: (state) => {console.log(state);state.draggedItem.id = crypto.randomUUID()}
+        }
+      }}
+      animate:flip={{ duration: flipDurationMs }}
+      onclick={() => handleBotClick(bot)}
+    >
       <img src={bot.icon || defaultIcon} alt="icon" />
       <p>{bot.displayName}</p>
       {#if bot.uniquePathSegment}
@@ -362,7 +344,7 @@ function SelectedToggleFavorite() {
 {/if}
 
 {#if filteredScripts.length !== 0}
-  <h4 id="scripts-header">Scripts</h4>
+  <h3 id="scripts-header">Scripts</h3>
 {/if}
 
 <div class="bots">
@@ -531,6 +513,8 @@ function SelectedToggleFavorite() {
   .bot img {
     height: 2rem;
     width: auto;
+    user-drag: none;
+    -webkit-user-drag: none;
   }
   .info-button {
     display: flex;

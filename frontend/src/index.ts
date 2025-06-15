@@ -7,6 +7,7 @@ import {
   PsyonixBotInfo,
 } from "../bindings/gui";
 import App from "./App.svelte";
+import SuperJSON from "superjson";
 
 const app: any = mount(App, {
   target: document.body,
@@ -14,6 +15,10 @@ const app: any = mount(App, {
   //   name: "world",
   // },
 });
+
+SuperJSON.registerClass(BotInfo);
+SuperJSON.registerClass(PsyonixBotInfo);
+SuperJSON.registerClass(HumanInfo);
 
 export interface DraggablePlayer {
   id: string;
