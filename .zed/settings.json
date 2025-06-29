@@ -7,14 +7,14 @@
   "lsp": {
     "biome": {
       "settings": {
-        "config_path": "frontend/biome.json",
+        "configuration_path": "frontend/biome.json",
         "require_config_file": true
       }
     }
   },
   "code_actions_on_format": {
-    "source.fixAll.biome": true,
-    "source.organizeImports.biome": true
+    // "source.fixAll.biome": true,
+    // "source.organizeImports.biome": true
   },
   "languages": {
     "Svelte": {
