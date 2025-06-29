@@ -149,7 +149,6 @@ const dnd_container_namespace = `team_${crypto.randomUUID()}`;
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     {#each items as bot, i (bot.id)}
-      <!-- TODO: maybe remove stopPropagation and instead require a click on the team header -->
       <div
         class="botContainer"
         use:droppable={{
