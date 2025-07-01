@@ -10,7 +10,7 @@ import defaultIcon from "../assets/rlbot_mono.png";
 import starIcon from "../assets/star.svg";
 import filledStarIcon from "../assets/starFilled.svg";
 import { BASE_PLAYERS } from "../base-players";
-import { type DraggablePlayer, type ToggleableScript } from "../index";
+import { parseJSON, type DraggablePlayer, type ToggleableScript } from "../index";
 //@ts-ignore
 import LoadoutEditor from "./LoadoutEditor/Main.svelte";
 import { getAndParseItems } from "./LoadoutEditor/items";
@@ -41,7 +41,7 @@ let {
 const flipDurationMs = 100;
 
 let favorites: string[] = $state(
-  JSON.parse(localStorage.getItem("FAVORITES") || "[]"),
+  parseJSON(localStorage.getItem("FAVORITES")) || []
 );
 $effect(() => {
   localStorage.setItem("FAVORITES", JSON.stringify(favorites));

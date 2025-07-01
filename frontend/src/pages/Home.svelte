@@ -24,6 +24,7 @@ import {
   type DraggablePlayer,
   type ToggleableScript,
   draggablePlayerToPlayerJs,
+  parseJSON,
 } from "../index";
 import { mapStore } from "../settings";
 
@@ -36,7 +37,7 @@ let paths: {
   installPath: string;
   visible: boolean;
 }[] = $state(
-  JSON.parse(window.localStorage.getItem("BOT_SEARCH_PATHS") || "[]"),
+  parseJSON(window.localStorage.getItem("BOT_SEARCH_PATHS")) || []
 );
 
 let botpackNotifIds: { [repo: string]: string } = {};
@@ -245,13 +246,13 @@ let extraOptions: ExtraOptions = $state({
   autoStartAgents: true,
   waitForAgents: true,
   // rest are fine with being nullish
-  ...JSON.parse(localStorage.getItem("MS_EXTRAOPTIONS") || "{}"),
+  ...parseJSON(localStorage.getItem("MS_EXTRAOPTIONS")) || {},
 });
 $effect(() => {
   localStorage.setItem("MS_EXTRAOPTIONS", JSON.stringify(extraOptions));
 });
 let mutatorSettings = $state(
-  JSON.parse(localStorage.getItem("MS_MUTATORS") || "{}"),
+  parseJSON(localStorage.getItem("MS_MUTATORS")) || {},
 );
 $effect(() => {
   localStorage.setItem("MS_MUTATORS", JSON.stringify(mutatorSettings));

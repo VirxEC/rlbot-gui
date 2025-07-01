@@ -20,6 +20,18 @@ SuperJSON.registerClass(BotInfo);
 SuperJSON.registerClass(PsyonixBotInfo);
 SuperJSON.registerClass(HumanInfo);
 
+export function parseJSON(item: string | null): any | null {
+  if (item === null) {
+    return null
+  }
+
+  try {
+    return JSON.parse(item)
+  } catch {
+    return null
+  }
+}
+
 export interface DraggablePlayer {
   id: string;
   displayName: string;
