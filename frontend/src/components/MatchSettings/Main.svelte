@@ -13,6 +13,7 @@ let {
   extraOptions = $bindable(),
   mutators = $bindable(),
   launcherOptionsVisible = $bindable(),
+  customMaps = {},
   onStart = (randomizeMap: boolean) => {},
   onStop = () => {},
 } = $props();
@@ -87,17 +88,20 @@ function filterMutatorOptions() {
 }
 
 function getMaps() {
-  const standardMaps = Object.entries(MAPS_STANDARD).sort(([a], [b]) =>
+  const sortedStandardMaps = Object.entries(MAPS_STANDARD).sort(([a], [b]) =>
     a.localeCompare(b),
   );
-  const nonStandardMaps = Object.entries(MAPS_NON_STANDARD).sort(([a], [b]) =>
+  const sortedNonStandardMaps = Object.entries(MAPS_NON_STANDARD).sort(([a], [b]) =>
+    a.localeCompare(b),
+  );
+  const sortedCustomMaps = Object.entries(customMaps).sort(([a], [b]) =>
     a.localeCompare(b),
   );
 
-  return Object.fromEntries([...standardMaps, ...nonStandardMaps]);
+  return Object.fromEntries([...sortedStandardMaps, ...sortedNonStandardMaps, ...sortedCustomMaps]);
 }
 
-const ALL_MAPS = getMaps();
+let allMaps = $derived.by(getMaps);
 </script>
 
 <div class="matchSettings">
@@ -106,7 +110,7 @@ const ALL_MAPS = getMaps();
     <div class="settings">
       <div class="left-controls">
         <Select
-          options={ALL_MAPS}
+          options={allMaps}
           bind:value={map}
           placeholder="Select map"
         />

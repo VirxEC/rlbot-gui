@@ -223,15 +223,36 @@ async function updateScripts() {
   loadingScripts = false;
 }
 
+let latestMapUpdateTime = null;
+let loadingMaps = $state(false);
+let customMaps: { [key: string]: string } = $state({});
+
+async function updateMaps() {
+  loadingMaps = true;
+  let internalUpdateTime = new Date();
+  latestMapUpdateTime = internalUpdateTime;
+  const result = await App.GetMaps(
+    paths.filter((x) => x.visible).map((x) => x.installPath),
+  );
+  if (latestMapUpdateTime !== internalUpdateTime) {
+    return; // if newer "search" already started, dont write old data
+  }
+  console.log(result);
+  customMaps = result;
+  loadingMaps = false;
+}
+
 $effect(() => {
   localStorage.setItem("BOT_SEARCH_PATHS", JSON.stringify(paths));
   updateBots();
   updateScripts();
+  updateMaps();
 });
 
 function loadPaths() {
   updateBots();
   updateScripts();
+  updateMaps();
 }
 
 let mode = $state(localStorage.getItem("MS_MODE") || "Soccar");
@@ -363,9 +384,9 @@ function handleSearch(event: Event) {
         class="reloadButton"
         title="(note: you need to re-add a bot to a team to apply changes)"
         onclick={loadPaths}
-        disabled={loadingPlayers || loadingScripts}
+        disabled={loadingPlayers || loadingScripts || loadingMaps}
       ><img src={reloadIcon} alt="reload" /></button>
-      {#if loadingPlayers || loadingScripts}
+      {#if loadingPlayers || loadingScripts || loadingMaps}
         <h3>Searching...</h3>
       {/if}
       <div style="flex:1"></div>
@@ -390,6 +411,7 @@ function handleSearch(event: Event) {
     <MatchSettings
       onStart={onMatchStart}
       onStop={onMatchStop}
+      customMaps={customMaps}
       bind:map={$mapStore}
       bind:mode
       bind:mutators={mutatorSettings}
