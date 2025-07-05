@@ -237,7 +237,7 @@ async function updateMaps() {
   if (latestMapUpdateTime !== internalUpdateTime) {
     return; // if newer "search" already started, dont write old data
   }
-  console.log(result);
+
   customMaps = result;
   loadingMaps = false;
 }
