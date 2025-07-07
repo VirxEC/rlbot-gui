@@ -157,50 +157,94 @@ type StartMatchOptions struct {
 	LauncherArg     string                `json:"launcherArg"`
 }
 
+func ReadAllMessages(conn *rlbot.RLBotConnection, packetChan chan any) {
+	for {
+		packet, err := conn.RecvPacket() // This is the blocking call
+		if err != nil {
+			packetChan <- fmt.Errorf("error receiving packet: %w", err) // Send the error to the channel
+			return                                                      // Exit goroutine on error
+		}
+		packetChan <- packet.Value // Send the received packet to the channel
+
+		switch packet.Type {
+		case flat.CoreMessageDisconnectSignal:
+			return // Exit goroutine on disconnect signal
+		}
+	}
+}
+
 func WaitForMatchReady(
 	conn *rlbot.RLBotConnection,
-	expectedMatchConfig *flat.MatchConfigurationT,
-	matchStartDur time.Duration,
+	rlbot_address string,
+	matchLoadDur time.Duration,
 	matchReadyDur time.Duration,
 ) error {
-	packetChan := make(chan interface{})
+	packetChan := make(chan any)
 
 	// Goroutine to continuously receive packets from the connection
-	go func() {
-		for {
-			packet, err := conn.RecvPacket() // This is the blocking call
-			if err != nil {
-				packetChan <- fmt.Errorf("error receiving packet: %w", err) // Send the error to the channel
-				return                                                      // Exit goroutine on error
-			}
-			packetChan <- packet // Send the received packet to the channel
-		}
-	}()
-
-	var matchConfig *flat.MatchConfigurationT
-	var gamePacket *flat.GamePacketT
+	go ReadAllMessages(conn, packetChan)
 
 	// First wait: for initial MatchConfigurationT and GamePacketT, or timeout (matchStartDur)
-	timer1 := time.NewTimer(matchStartDur)
+	timer1 := time.NewTimer(matchLoadDur)
 	defer timer1.Stop() // Ensure timer is stopped when the function exits
 
-	for matchConfig == nil || gamePacket == nil {
+	// Wait for the previous match to ended, then reconnect
+	// We can then guarentee that the subsequent GamePackets are from our new match
+	reconnected := false
+	for !reconnected {
 		select {
 		case item := <-packetChan: // Receive either packet or error
 			if err, ok := item.(error); ok {
 				return err // Propagate the error from the goroutine
 			}
-			packet := item // Otherwise, it's a packet
 
-			switch packet := packet.(type) {
-			case *flat.MatchConfigurationT:
-				matchConfig = packet
-			case *flat.GamePacketT:
-				gamePacket = packet
+			switch item.(type) {
+			case *flat.DisconnectSignalT:
+				conn2, err := rlbot.Connect(rlbot_address)
+				if err != nil {
+					return fmt.Errorf("Failed to reconnect to RLBotServer at %s", rlbot_address)
+				}
+
+				conn = &conn2
+
+				// Close the connection if a new match is started in the middle of waiting for this one
+				conn.SendPacket(&flat.ConnectionSettingsT{
+					AgentId:              "",
+					WantsBallPredictions: false,
+					WantsComms:           false,
+					CloseBetweenMatches:  true,
+				})
+
+				// Start reading messages from the new connection
+				go ReadAllMessages(conn, packetChan)
+
+				reconnected = true
 			}
 		case <-timer1.C:
-			conn.SendPacket(nil)
-			return fmt.Errorf("Timed out waiting for match start after %s", matchStartDur)
+			conn.SendPacket(&flat.DisconnectSignalT{})
+			return fmt.Errorf("Timed out waiting for match load after %s", matchLoadDur)
+		}
+	}
+
+	var gamePacket *flat.GamePacketT
+	for gamePacket == nil {
+		select {
+		case item := <-packetChan: // Receive either packet or error
+			if err, ok := item.(error); ok {
+				return err // Propagate the error from the goroutine
+			}
+
+			switch packet := item.(type) {
+			case *flat.FieldInfoT:
+				conn.SendPacket(&flat.InitCompleteT{})
+			case *flat.GamePacketT:
+				gamePacket = packet
+			case *flat.DisconnectSignalT:
+				return fmt.Errorf("Match was ended while waiting for it to load")
+			}
+		case <-timer1.C:
+			conn.SendPacket(&flat.DisconnectSignalT{})
+			return fmt.Errorf("Timed out waiting for match load after %s", matchLoadDur)
 		}
 	}
 
@@ -216,15 +260,15 @@ func WaitForMatchReady(
 			if err, ok := item.(error); ok {
 				return err // Propagate the error from the goroutine
 			}
-			packet := item
 
-			switch packet := packet.(type) {
+			switch packet := item.(type) {
 			case *flat.GamePacketT:
 				gamePacket = packet
-				// Ignore other packet types in this phase
+			case *flat.DisconnectSignalT:
+				return fmt.Errorf("Match was ended while waiting for it to start")
 			}
 		case <-timer2.C:
-			conn.SendPacket(nil)
+			conn.SendPacket(&flat.DisconnectSignalT{})
 			return fmt.Errorf(
 				"Timed out waiting for match ready after %s",
 				matchReadyDur,
@@ -232,19 +276,45 @@ func WaitForMatchReady(
 		}
 	}
 
+	conn.SendPacket(&flat.DisconnectSignalT{})
+
+	return nil
+}
+
+func StartAndWaitForMatch(rlbot_address string, match *flat.MatchConfigurationT) error {
+	conn, err := rlbot.Connect(rlbot_address)
+	if err != nil {
+		return fmt.Errorf("Failed to reconnect to RLBotServer at %s", rlbot_address)
+	}
+
+	// Rely on RLBotServer closing this connection when the new match starts
+	// to differentiate between the new MatchConfigurationT and the old one.
+	conn.SendPacket(&flat.ConnectionSettingsT{
+		AgentId:              "",
+		WantsBallPredictions: false,
+		WantsComms:           false,
+		CloseBetweenMatches:  true,
+	})
+	conn.SendPacket(&flat.InitCompleteT{})
+
+	conn.SendPacket(match)
+
+	// Wait for the match to start, with timeouts
+	err = WaitForMatchReady(
+		&conn,
+		rlbot_address,
+		120*time.Second,
+		20*time.Second,
+	)
+	if err != nil {
+		conn.SendPacket(&flat.DisconnectSignalT{})
+		return err
+	}
+
 	return nil
 }
 
 func (a *App) StartMatch(options StartMatchOptions) Result {
-	// TODO: Save this in App struct
-	conn, err := rlbot.Connect(a.rlbot_address)
-	if err != nil {
-		return Result{
-			false,
-			"Failed to connect to RLBotServer at " + a.rlbot_address,
-		}
-	}
-
 	var gameMode flat.GameMode
 	switch options.GameMode {
 	case "Soccar":
@@ -319,34 +389,15 @@ func (a *App) StartMatch(options StartMatchOptions) Result {
 		ExistingMatchBehavior: flat.ExistingMatchBehavior(options.ExtraOptions.ExistingMatchBehavior),
 	}
 
-	conn.SendPacket(&match)
-
-	conn.SendPacket(&flat.ConnectionSettingsT{
-		AgentId:              "",
-		WantsBallPredictions: false,
-		WantsComms:           false,
-		CloseBetweenMatches:  false,
-	})
-	conn.SendPacket(&flat.InitCompleteT{})
-	// Using the new function with a 30-second timeout
-	err = WaitForMatchReady(
-		&conn,
-		&match,
-		120*time.Second,
-		20*time.Second,
-	)
+	err := StartAndWaitForMatch(a.rlbot_address, &match)
 	if err != nil {
 		return Result{false, err.Error()}
 	}
-
-	conn.SendPacket(nil) // Tell core that we want to disconnect
 
 	return Result{true, ""}
 }
 
 func (a *App) StopMatch(shutdownServer bool) Result {
-	// TODO: Save this in App struct
-	// TODO: Make dynamic, pull from env var?
 	conn, err := rlbot.Connect(a.rlbot_address)
 	if err != nil {
 		return Result{false, "Failed to connect to rlbot"}
@@ -355,7 +406,7 @@ func (a *App) StopMatch(shutdownServer bool) Result {
 	conn.SendPacket(&flat.StopCommandT{
 		ShutdownServer: shutdownServer,
 	})
-	conn.SendPacket(nil) // Tell core that we want to disconnect
+	conn.SendPacket(&flat.DisconnectSignalT{})
 
 	return Result{true, ""}
 }

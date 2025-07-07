@@ -136,30 +136,38 @@ async function LaunchMatch(
   team: "blue" | "orange",
 ) {
   if (!previewMatchTeam) {
+    previewMatchTeam = team;
+    lastShowcaseType = selectedShowcaseType;
+
+    let id = toast.loading(`Launching preview for ${team} car...`);
     await App.LaunchPreviewLoadout(
       options,
       ExistingMatchBehavior.ExistingMatchBehaviorRestart,
     );
 
-    toast.success(`Launching preview for ${team} car`);
+    toast.success(`Launched preview for ${team} car`, { id });
   } else {
     if (
       lastShowcaseType !== selectedShowcaseType ||
       previewMatchTeam !== team
     ) {
+      previewMatchTeam = team;
+      lastShowcaseType = selectedShowcaseType;
+
       await App.LaunchPreviewLoadout(
         options,
         ExistingMatchBehavior.ExistingMatchBehaviorContinueAndSpawn,
       );
     } else {
+      previewMatchTeam = team;
+      lastShowcaseType = selectedShowcaseType;
+      
       await App.SetLoadout(options);
     }
 
     toast.success(`Preview updated for ${team} car`);
   }
 
-  previewMatchTeam = team;
-  lastShowcaseType = selectedShowcaseType;
   App.SetShowcaseType(selectedShowcaseType, team === "blue" ? 0 : 1);
 }
 </script>

@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -96,20 +97,31 @@ func (options LoadoutPreviewOptions) GetPreviewMatch(existingMatchBehavior flat.
 }
 
 func (a *App) LaunchPreviewLoadout(options LoadoutPreviewOptions, existingMatchBehavior flat.ExistingMatchBehavior) error {
-	conn, err := rlbot.Connect(a.rlbot_address)
-	if err != nil {
-		return err
-	}
-
 	match, err := options.GetPreviewMatch(existingMatchBehavior)
 	if err != nil {
 		return err
 	}
 
-	conn.SendPacket(match)
-	conn.SendPacket(nil)
+	return StartAndWaitForMatch(a.rlbot_address, match)
+}
 
-	return nil
+func WaitForGamePacket(conn *rlbot.RLBotConnection) (*flat.GamePacketT, error) {
+	var gamePacket *flat.GamePacketT
+	for gamePacket == nil || (gamePacket.MatchInfo.MatchPhase != flat.MatchPhaseKickoff && gamePacket.MatchInfo.MatchPhase != flat.MatchPhaseActive) {
+		packet, err := conn.RecvPacket()
+		if err != nil {
+			return nil, err
+		}
+
+		switch packet := packet.Value.(type) {
+		case *flat.GamePacketT:
+			gamePacket = packet
+		case *flat.DisconnectSignalT:
+			return nil, fmt.Errorf("received disconnect signal while waiting for game packet")
+		}
+	}
+
+	return gamePacket, nil
 }
 
 func (a *App) SetLoadout(options LoadoutPreviewOptions) error {
@@ -127,18 +139,9 @@ func (a *App) SetLoadout(options LoadoutPreviewOptions) error {
 
 	conn.SendPacket(&flat.InitCompleteT{})
 
-	// wait for GamePacket
-	var gamePacket *flat.GamePacketT
-	for gamePacket == nil {
-		packet, err := conn.RecvPacket()
-		if err != nil {
-			return err
-		}
-
-		switch packet := packet.Value.(type) {
-		case *flat.GamePacketT:
-			gamePacket = packet
-		}
+	gamePacket, err := WaitForGamePacket(&conn)
+	if err != nil {
+		return err
 	}
 
 	// if the match is over, launch a new match
@@ -155,7 +158,7 @@ func (a *App) SetLoadout(options LoadoutPreviewOptions) error {
 		}
 
 		conn.SendPacket(match)
-		conn.SendPacket(nil)
+		conn.SendPacket(&flat.DisconnectSignalT{})
 		return nil
 	}
 
@@ -167,7 +170,7 @@ func (a *App) SetLoadout(options LoadoutPreviewOptions) error {
 		}
 
 		conn.SendPacket(match)
-		conn.SendPacket(nil)
+		conn.SendPacket(&flat.DisconnectSignalT{})
 		return nil
 	}
 
@@ -176,47 +179,13 @@ func (a *App) SetLoadout(options LoadoutPreviewOptions) error {
 		Loadout: options.Loadout.ToPlayerLoadout(),
 	})
 
-	conn.SendPacket(nil)
+	conn.SendPacket(&flat.DisconnectSignalT{})
 
 	return nil
 }
 
-func WaitForLoadoutMatchReady(conn *rlbot.RLBotConnection, team uint32) (*flat.GamePacketT, error) {
-	// wait for the correct match to start
-	var gamePacket *flat.GamePacketT
-	var matchConfig *flat.MatchConfigurationT
-	for matchConfig == nil || gamePacket == nil || len(matchConfig.PlayerConfigurations) != 1 || matchConfig.PlayerConfigurations[0].Team != team || matchConfig.PlayerConfigurations[0].Variety.Type != flat.PlayerClassCustomBot || matchConfig.PlayerConfigurations[0].Variety.Value.(*flat.CustomBotT).Name != "Showcase" {
-		packet, err := conn.RecvPacket()
-		if err != nil {
-			return nil, err
-		}
-
-		switch packet := packet.Value.(type) {
-		case *flat.MatchConfigurationT:
-			matchConfig = packet
-		case *flat.GamePacketT:
-			gamePacket = packet
-		}
-	}
-
-	// while the match isn't active or the car is on the wrong team
-	for !(gamePacket.MatchInfo.MatchPhase == flat.MatchPhaseActive || gamePacket.MatchInfo.MatchPhase == flat.MatchPhaseKickoff) || len(gamePacket.Players) != 1 || gamePacket.Players[0].Team != team {
-		packet, err := conn.RecvPacket()
-		if err != nil {
-			return nil, err
-		}
-
-		switch packet := packet.Value.(type) {
-		case *flat.GamePacketT:
-			gamePacket = packet
-		}
-	}
-
-	return gamePacket, nil
-}
-
-func (a *App) StaticSetter(team uint32) error {
-	conn, err := rlbot.Connect(a.rlbot_address)
+func StaticSetter(rlbot_address string, team uint32) error {
+	conn, err := rlbot.Connect(rlbot_address)
 	if err != nil {
 		return err
 	}
@@ -229,11 +198,6 @@ func (a *App) StaticSetter(team uint32) error {
 	})
 
 	conn.SendPacket(&flat.InitCompleteT{})
-
-	_, err = WaitForLoadoutMatchReady(&conn, team)
-	if err != nil {
-		return err
-	}
 
 	gameState := flat.DesiredGameStateT{
 		CarStates: []*flat.DesiredCarStateT{
@@ -278,7 +242,7 @@ func (a *App) SetShowcaseType(showcaseType string, team uint32) error {
 
 	conn.SendPacket(&flat.InitCompleteT{})
 
-	gamePacket, err := WaitForLoadoutMatchReady(&conn, team)
+	gamePacket, err := WaitForGamePacket(&conn)
 	if err != nil {
 		return err
 	}
@@ -310,7 +274,7 @@ func (a *App) SetShowcaseType(showcaseType string, team uint32) error {
 	case "static":
 		controller.Boost = true
 
-		go a.StaticSetter(team)
+		go StaticSetter(a.rlbot_address, team)
 	case "boost":
 		controller.Boost = true
 		controller.Steer = 1
@@ -353,7 +317,7 @@ func (a *App) SetShowcaseType(showcaseType string, team uint32) error {
 		ControllerState: &controller,
 	})
 
-	conn.SendPacket(nil)
+	conn.SendPacket(&flat.DisconnectSignalT{})
 
 	return nil
 }
