@@ -315,9 +315,7 @@ function SelectedToggleFavorite() {
       use:draggable={{
         container: "botlist",
         dragData: SuperJSON.stringify(bot),
-        callbacks: {
-          // onDragEnd: (state) => {console.log(state);state.draggedItem.id = crypto.randomUUID()}
-        }
+        interactive: [".info-button"]
       }}
       animate:flip={{ duration: flipDurationMs }}
       onclick={() => handleBotClick(bot)}
@@ -363,7 +361,13 @@ function SelectedToggleFavorite() {
       {#if script.uniquePathSegment}
         <span class="unique-bot-identifier">({script.uniquePathSegment})</span>
       {/if}
-      <button class="info-button" onclick={(e) => {e.stopPropagation();handleScriptInfoClick(script)}}>
+      <button
+        class="info-button"
+        onclick={(e) => {
+          e.stopPropagation();
+          handleScriptInfoClick(script)
+        }}
+      >
         <img src={infoIcon} alt="i">
       </button>
     </div>
