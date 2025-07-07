@@ -1,8 +1,8 @@
 module gui
 
-go 1.23.1
+go 1.24.0
 
-toolchain go1.23.6
+toolchain go1.24.4
 
 require (
 	github.com/BurntSushi/toml v1.5.0
@@ -10,8 +10,12 @@ require (
 	github.com/ncruces/zenity v0.10.14
 	github.com/ulikunitz/xz v0.5.12
 	github.com/wailsapp/mimetype v1.4.1
-	github.com/wailsapp/wails/v3 v3.0.0-alpha.9
+	github.com/wailsapp/wails/v3 v3.0.0-alpha.10
 )
+
+// see https://github.com/wailsapp/wails/pull/4259
+// fixes drag and drop on windows
+replace github.com/wailsapp/wails/v3 => github.com/swz-git/wails/v3 v3.0.0-20250707232038-b80d0e14ee2b
 
 require (
 	dario.cat/mergo v1.0.2 // indirect
@@ -44,6 +48,7 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/pjbgf/sha1cd v0.3.2 // indirect
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/randall77/makefat v0.0.0-20210315173500-7ddd0e42c844 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/samber/lo v1.51.0 // indirect
@@ -52,7 +57,6 @@ require (
 	github.com/wailsapp/go-webview2 v1.0.21 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	golang.org/x/crypto v0.39.0 // indirect
-	golang.org/x/exp v0.0.0-20250210185358-939b2ce775ac // indirect
 	golang.org/x/image v0.28.0 // indirect
 	golang.org/x/net v0.41.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect

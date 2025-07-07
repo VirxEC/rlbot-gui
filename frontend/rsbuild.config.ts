@@ -13,6 +13,9 @@ export default defineConfig({
       js: "inline-source-map",
     },
   },
+  html: {
+    template: "./public/index.html"
+  },
   tools: {
     rspack(config, { addRules }) {
       addRules([
