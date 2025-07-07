@@ -6,6 +6,7 @@ import CalendarPlusIcon from "../assets/calendar-plus.svg";
 import GeoIcon from "../assets/geo.svg";
 import InfoIcon from "../assets/info_icon.svg";
 import Modal from "./Modal.svelte";
+import RLBotMono from "../assets/rlbot_mono.png"
 
 let {
   visible = $bindable(false),
@@ -168,93 +169,105 @@ async function fetchEvents() {
 
 <Modal title="Community Events" bind:visible>
   <!-- svelte-ignore a11y_invalid_attribute -->
-  <div id="community-events">
-    {#await fetchEvents()}
-      <p>Loading events...</p>
-    {:then events }
-      {#if events.length === 0}
-        <p>There are no community events at this time.</p>
-      {:else}
-      {#each events as event}
-        {@const remainingTimeInMs = event.date.getTime() - now.getTime()}
-        {@const timeUntil = formatFromNow(Math.abs(remainingTimeInMs))}
-        <div class="event">
-          {#if event.logo}
-            <img class="event-logo" src={event.logo} alt="event logo" />
-          {/if}
-          <div>
-            <h2>{ event.name }</h2>
-            {#if !timeUntil}
-            <p>
-              <img src={AlarmIcon} alt="alarm" /> Starting now!
-            </p>
-            {:else if remainingTimeInMs > 0}
-            <p>
-              <img src={CalendarPlusIcon} alt="calendar" /> Starts in <b>{ timeUntil }</b> ({ event.time })
-            </p>
-            {:else}
-            <p>
-              <img src={AlarmIcon} alt="alarm" /> Started <b>{ timeUntil }</b> ago, but you can still join!
-            </p>
-            {/if}
-            <p>
-              <img src={GeoIcon} alt="location"> <a href="#" onclick={() => {Browser.OpenURL(event.location)}} target="_blank">{ event.location }</a>
-            </p>
-            {#if event.moreInfo}
-            <br>
-            <p class="more-info">
-              <img src={InfoIcon} alt="info"> <a href="#" onclick={() => {Browser.OpenURL(event.moreInfo)}} target="_blank">More info</a>
-            </p>
-            {/if}
+  {#await fetchEvents()}
+    <p>Loading events...</p>
+  {:then events }
+    {#if events.length === 0}
+      <p>There are no community events at this time.</p>
+    {:else}
+      <div class="events">
+        {#each events as event}
+          {@const remainingTimeInMs = event.date.getTime() - now.getTime()}
+          {@const timeUntil = formatFromNow(Math.abs(remainingTimeInMs))}
+          <div class="event">
+            <div class="logo-wrap">
+              <img class={"event-logo" + (!event.logo ? " lowbright" : "")} src={event.logo || RLBotMono} alt="Event logo"/>
+            </div>
+            <div class="info">
+              <h2>{ event.name }</h2>
+              {#if !timeUntil}
+              <p>
+                <img src={AlarmIcon} alt="alarm" /> Starting now!
+              </p>
+              {:else if remainingTimeInMs > 0}
+              <p>
+                <img src={CalendarPlusIcon} alt="calendar" /> Starts in <b>{ timeUntil }</b> ({ event.time })
+              </p>
+              {:else}
+              <p>
+                <img src={AlarmIcon} alt="alarm" /> Started <b>{ timeUntil }</b> ago, but you can still join!
+              </p>
+              {/if}
+              <p>
+                <img src={GeoIcon} alt="location"> <a href="#" onclick={() => {Browser.OpenURL(event.location)}} target="_blank">{ event.location }</a>
+              </p>
+              {#if event.moreInfo}
+              <p class="more-info">
+                <img src={InfoIcon} alt="info"> <a href="#" onclick={() => {Browser.OpenURL(event.moreInfo)}} target="_blank">More info</a>
+              </p>
+              {/if}
+            </div>
           </div>
-        </div>
-      {/each}
-      {/if}
-    {/await}
-  </div>
+        {/each}
+      </div>
+    {/if}
+  {/await}
+
 </Modal>
 
 <style>
   h2 {
-    font-size: 1.6em;
-    margin-bottom: 0.25em;
+    font-size: 1.6rem;
+    margin-bottom: 0.25rem;
+  }
+  .more-info {
+    margin-top: 0.5rem;
   }
   p {
-    align-items: center;
-    vertical-align: middle;
-    margin-top: 0.5em;
+    margin: .2rem 0px;
+    margin-left: 0.5rem;
   }
   p img {
     filter: invert() brightness(90%);
     width: 24px;
-    margin-left: 0.5em;
     margin-bottom: 3px;
     vertical-align: middle;
   }
   .event {
     display: flex;
+    width: 100%;
     align-items: center;
-    vertical-align: middle;
-    margin-bottom: 1.2em;
+    justify-content: space-between;
+    gap: 1rem;
   }
-  .event > img {
-    margin-left: 0.5em;
-    margin-right: 1.2em;
+  .event:not(:last-child) {
+    border-bottom: 1px solid var(--background-alt);
+    padding-bottom: 0.6rem;
+    margin-bottom: 1rem;
   }
-  .event > div {
+  .logo-wrap {
     display: flex;
-    flex-direction: column;
     justify-content: center;
+    align-items: center;
+    width: 18%;
+    height: 100%;
   }
   .event-logo {
-    max-height: auto;
-    width: 18%;
+    max-width: 100%;
+    height: auto;
   }
-  #community-events {
-    min-width: 500px;
-    min-height: 150px;
+  .info {
+    flex-grow: 1;
+  }
+  .events {
+    display: flex;
+    flex-direction: column;
     width: 100%;
-    height: 100%;
-    overflow: auto;
+    align-items: center;
+    padding: 0px 1.2rem;
+    min-width: 42rem;
+  }
+  .lowbright {
+    filter: brightness(.75);
   }
 </style>
