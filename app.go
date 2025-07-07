@@ -21,8 +21,8 @@ type RawReleaseInfo struct {
 
 // App struct
 type App struct {
-	latest_release_json []RawReleaseInfo
-	rlbot_address       string
+	latestReleaseJson []RawReleaseInfo
+	rlbotAddress       string
 }
 
 func (a *App) IgnoreMe(
@@ -40,42 +40,42 @@ func (a *App) GetDefaultPath() string {
 
 	// assume linux
 
-	xdg_data_home := os.Getenv("XDG_DATA_HOME")
-	if xdg_data_home == "" {
+	xdgDataHome := os.Getenv("XDG_DATA_HOME")
+	if xdgDataHome == "" {
 		home := os.Getenv("HOME")
-		xdg_data_home = filepath.Join(home, ".local/share")
+		xdgDataHome = filepath.Join(home, ".local/share")
 	}
 
-	return filepath.Join(xdg_data_home, "rlbotgui")
+	return filepath.Join(xdgDataHome, "rlbotgui")
 }
 
 func (a *App) DownloadBotpack(repo string, installPath string) (string, error) {
-	latest_release, err := a.GetLatestReleaseData(repo)
+	latestRelease, err := a.GetLatestReleaseData(repo)
 	if err != nil {
 		return "", err
 	}
 
-	var file_name string
+	var fileName string
 	if runtime.GOOS == "windows" {
-		file_name = "botpack_x86_64-windows.tar.xz"
+		fileName = "botpack_x86_64-windows.tar.xz"
 	} else {
-		file_name = "botpack_x86_64-linux.tar.xz"
+		fileName = "botpack_x86_64-linux.tar.xz"
 	}
 
-	var download_url string
-	for _, asset := range latest_release.Assets {
-		if asset.Name == file_name {
-			download_url = asset.BrowserDownloadURL
+	var downloadUrl string
+	for _, asset := range latestRelease.Assets {
+		if asset.Name == fileName {
+			downloadUrl = asset.BrowserDownloadURL
 			break
 		}
 	}
 
-	err = DownloadExtractArchive(download_url, installPath)
+	err = DownloadExtractArchive(downloadUrl, installPath)
 	if err != nil {
 		return "", err
 	}
 
-	return latest_release.TagName, nil
+	return latestRelease.TagName, nil
 }
 
 func (a *App) RepairBotpack(repo string, installPath string) (string, error) {
@@ -175,7 +175,7 @@ func ReadAllMessages(conn *rlbot.RLBotConnection, packetChan chan any) {
 
 func WaitForMatchReady(
 	conn *rlbot.RLBotConnection,
-	rlbot_address string,
+	rlbotAddress string,
 	matchLoadDur time.Duration,
 	matchReadyDur time.Duration,
 ) error {
@@ -189,7 +189,7 @@ func WaitForMatchReady(
 	defer timer1.Stop() // Ensure timer is stopped when the function exits
 
 	// Wait for the previous match to ended, then reconnect
-	// We can then guarentee that the subsequent GamePackets are from our new match
+	// We can then guarantee that the subsequent GamePackets are from our new match
 	reconnected := false
 	for !reconnected {
 		select {
@@ -200,9 +200,9 @@ func WaitForMatchReady(
 
 			switch item.(type) {
 			case *flat.DisconnectSignalT:
-				conn2, err := rlbot.Connect(rlbot_address)
+				conn2, err := rlbot.Connect(rlbotAddress)
 				if err != nil {
-					return fmt.Errorf("Failed to reconnect to RLBotServer at %s", rlbot_address)
+					return fmt.Errorf("Failed to reconnect to RLBotServer at %s", rlbotAddress)
 				}
 
 				conn = &conn2
@@ -281,10 +281,10 @@ func WaitForMatchReady(
 	return nil
 }
 
-func StartAndWaitForMatch(rlbot_address string, match *flat.MatchConfigurationT) error {
-	conn, err := rlbot.Connect(rlbot_address)
+func StartAndWaitForMatch(rlbotAddress string, match *flat.MatchConfigurationT) error {
+	conn, err := rlbot.Connect(rlbotAddress)
 	if err != nil {
-		return fmt.Errorf("Failed to reconnect to RLBotServer at %s", rlbot_address)
+		return fmt.Errorf("Failed to reconnect to RLBotServer at %s", rlbotAddress)
 	}
 
 	// Rely on RLBotServer closing this connection when the new match starts
@@ -302,7 +302,7 @@ func StartAndWaitForMatch(rlbot_address string, match *flat.MatchConfigurationT)
 	// Wait for the match to start, with timeouts
 	err = WaitForMatchReady(
 		&conn,
-		rlbot_address,
+		rlbotAddress,
 		120*time.Second,
 		20*time.Second,
 	)
@@ -389,7 +389,7 @@ func (a *App) StartMatch(options StartMatchOptions) Result {
 		ExistingMatchBehavior: flat.ExistingMatchBehavior(options.ExtraOptions.ExistingMatchBehavior),
 	}
 
-	err := StartAndWaitForMatch(a.rlbot_address, &match)
+	err := StartAndWaitForMatch(a.rlbotAddress, &match)
 	if err != nil {
 		return Result{false, err.Error()}
 	}
@@ -398,7 +398,7 @@ func (a *App) StartMatch(options StartMatchOptions) Result {
 }
 
 func (a *App) StopMatch(shutdownServer bool) Result {
-	conn, err := rlbot.Connect(a.rlbot_address)
+	conn, err := rlbot.Connect(a.rlbotAddress)
 	if err != nil {
 		return Result{false, "Failed to connect to rlbot"}
 	}

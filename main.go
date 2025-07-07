@@ -16,7 +16,7 @@ import (
 //go:embed all:frontend/dist
 var assets embed.FS
 
-func check_nvidia() bool {
+func checkNvidia() bool {
 	cmd := exec.Command("nvidia-smi")
 	output, err := cmd.CombinedOutput()
 
@@ -30,7 +30,7 @@ func check_nvidia() bool {
 
 func main() {
 	// see https://github.com/tauri-apps/tauri/issues/9394
-	if check_nvidia() {
+	if checkNvidia() {
 		os.Setenv("WEBKIT_DISABLE_DMABUF_RENDERER", "1")
 	}
 

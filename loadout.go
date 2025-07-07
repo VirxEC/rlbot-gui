@@ -102,7 +102,7 @@ func (a *App) LaunchPreviewLoadout(options LoadoutPreviewOptions, existingMatchB
 		return err
 	}
 
-	return StartAndWaitForMatch(a.rlbot_address, match)
+	return StartAndWaitForMatch(a.rlbotAddress, match)
 }
 
 func WaitForGamePacket(conn *rlbot.RLBotConnection) (*flat.GamePacketT, error) {
@@ -125,7 +125,7 @@ func WaitForGamePacket(conn *rlbot.RLBotConnection) (*flat.GamePacketT, error) {
 }
 
 func (a *App) SetLoadout(options LoadoutPreviewOptions) error {
-	conn, err := rlbot.Connect(a.rlbot_address)
+	conn, err := rlbot.Connect(a.rlbotAddress)
 	if err != nil {
 		return err
 	}
@@ -184,8 +184,8 @@ func (a *App) SetLoadout(options LoadoutPreviewOptions) error {
 	return nil
 }
 
-func StaticSetter(rlbot_address string, team uint32) error {
-	conn, err := rlbot.Connect(rlbot_address)
+func StaticSetter(rlbotAddress string, team uint32) error {
+	conn, err := rlbot.Connect(rlbotAddress)
 	if err != nil {
 		return err
 	}
@@ -228,7 +228,7 @@ func StaticSetter(rlbot_address string, team uint32) error {
 }
 
 func (a *App) SetShowcaseType(showcaseType string, team uint32) error {
-	conn, err := rlbot.Connect(a.rlbot_address)
+	conn, err := rlbot.Connect(a.rlbotAddress)
 	if err != nil {
 		return err
 	}
@@ -274,7 +274,7 @@ func (a *App) SetShowcaseType(showcaseType string, team uint32) error {
 	case "static":
 		controller.Boost = true
 
-		go StaticSetter(a.rlbot_address, team)
+		go StaticSetter(a.rlbotAddress, team)
 	case "boost":
 		controller.Boost = true
 		controller.Steer = 1

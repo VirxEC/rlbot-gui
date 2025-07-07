@@ -30,15 +30,15 @@ import (
 // 	return C.GoBytes(unsafe.Pointer(buf), C.int(buf_len))
 // }
 
-func diff_apply(path string, diff []byte) error {
-	path_c := C.CString(path)
-	defer C.free(unsafe.Pointer(path_c))
+func diffApply(path string, diff []byte) error {
+	pathC := C.CString(path)
+	defer C.free(unsafe.Pointer(pathC))
 
 	// buff is to the first byte of the slice
 	buf := (*C.char)(unsafe.Pointer(&diff[0]))
-	buf_len := C.uint32_t(len(diff))
+	bufLen := C.uint32_t(len(diff))
 
-	err := C.diff_apply(path_c, buf, buf_len)
+	err := C.diff_apply(pathC, buf, bufLen)
 	if err != 0 {
 		return errors.New("failed to apply diff")
 	}

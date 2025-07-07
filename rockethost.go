@@ -140,9 +140,9 @@ func (a *App) StartRHostMatch(settings RHostMatchSettings) (string, error) {
 	}()
 
 	// TODO: Save this in App struct
-	conn, err := rlbot.Connect(a.rlbot_address)
+	conn, err := rlbot.Connect(a.rlbotAddress)
 	if err != nil {
-		return "", errors.New("Failed to connect to RLBotServer at " + a.rlbot_address)
+		return "", errors.New("Failed to connect to RLBotServer at " + a.rlbotAddress)
 	}
 
 	var launcher flat.Launcher

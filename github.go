@@ -166,15 +166,15 @@ func DownloadExtractArchive(url string, dest string) error {
 }
 
 func (a *App) GetLatestReleaseData(repo string) (*GhRelease, error) {
-	for _, release := range a.latest_release_json {
+	for _, release := range a.latestReleaseJson {
 		if release.repo == repo {
 			return &release.content, nil
 		}
 	}
 
-	latest_release_url := "https://api.github.com/repos/" + repo + "/releases/latest"
+	latestReleaseUrl := "https://api.github.com/repos/" + repo + "/releases/latest"
 
-	resp, err := http.Get(latest_release_url)
+	resp, err := http.Get(latestReleaseUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -190,30 +190,30 @@ func (a *App) GetLatestReleaseData(repo string) (*GhRelease, error) {
 		return nil, err
 	}
 
-	a.latest_release_json = append(a.latest_release_json, RawReleaseInfo{repo, content})
+	a.latestReleaseJson = append(a.latestReleaseJson, RawReleaseInfo{repo, content})
 
-	return &a.latest_release_json[len(a.latest_release_json)-1].content, nil
+	return &a.latestReleaseJson[len(a.latestReleaseJson)-1].content, nil
 }
 
 func (a *App) UpdateBotpack(repo string, installPath string, currentTag string) (string, error) {
-	latest_release, err := a.GetLatestReleaseData(repo)
+	latestRelease, err := a.GetLatestReleaseData(repo)
 	if err != nil {
 		return "", err
 	}
 
-	newest_tag := latest_release.TagName
-	if newest_tag == currentTag {
+	newestTag := latestRelease.TagName
+	if newestTag == currentTag {
 		return "", errors.New("already up to date")
 	}
 
-	current_version := strings.Split(currentTag, "-")[1]
-	current_version_num, err := strconv.Atoi(current_version)
+	currentVersion := strings.Split(currentTag, "-")[1]
+	currentVersionNum, err := strconv.Atoi(currentVersion)
 	if err != nil {
 		return "", err
 	}
 
-	newest_version := strings.Split(newest_tag, "-")[1]
-	newest_version_num, err := strconv.Atoi(newest_version)
+	newestVersion := strings.Split(newestTag, "-")[1]
+	newestVersionNum, err := strconv.Atoi(newestVersion)
 	if err != nil {
 		return "", err
 	}
@@ -226,19 +226,19 @@ func (a *App) UpdateBotpack(repo string, installPath string, currentTag string) 
 		file_name = "patch_x86_64-linux.bobdiff"
 	}
 
-	var lastest_download_url string
-	for _, asset := range latest_release.Assets {
+	var latestDownloadUrl string
+	for _, asset := range latestRelease.Assets {
 		if asset.Name == file_name {
-			lastest_download_url = asset.BrowserDownloadURL
+			latestDownloadUrl = asset.BrowserDownloadURL
 			break
 		}
 	}
 
-	for i := current_version_num + 1; i <= newest_version_num; i++ {
-		tag_i := strings.Replace(currentTag, current_version, strconv.Itoa(i), 1)
-		download_url := strings.Replace(lastest_download_url, newest_tag, tag_i, 1)
+	for i := currentVersionNum + 1; i <= newestVersionNum; i++ {
+		tagI := strings.Replace(currentTag, currentVersion, strconv.Itoa(i), 1)
+		downloadUrl := strings.Replace(latestDownloadUrl, newestTag, tagI, 1)
 
-		resp, err := http.Get(download_url)
+		resp, err := http.Get(downloadUrl)
 		if err != nil {
 			return "", err
 		}
@@ -270,11 +270,11 @@ func (a *App) UpdateBotpack(repo string, installPath string, currentTag string) 
 			return "", errors.New("no directory found")
 		}
 
-		err = diff_apply(filepath.Join(installPath, dir), bytes)
+		err = diffApply(filepath.Join(installPath, dir), bytes)
 		if err != nil {
 			return "", err
 		}
 	}
 
-	return latest_release.TagName, nil
+	return latestRelease.TagName, nil
 }
