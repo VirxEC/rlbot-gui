@@ -51,6 +51,7 @@ export const MAPS_STANDARD = {
   "NeoTokyo (Arcade)": "NeoTokyo_Arcade_P",
   "Futura Garden": "UF_Day_P",
   "DFH Stadium (10th Anniversary)": "stadium_10a_p",
+  "Drift Woods (Night)": "woods_night_p"
 };
 
 // biome-ignore format: keep consistent
@@ -84,7 +85,6 @@ export const MAPS_NON_STANDARD = {
   "Hoops (The Block)": "HoopsStreet_P",
   "Farmstead (Spooky)": "Farm_HW_P",
   "Champions Field (Nike FC)": "swoosh_p",
-  "Farmstead (Upsidedown)": "farm_hw_p",
   "Quadron": "KO_Quadron_P",
   "Calavera": "KO_Calavera_P",
   "Carbon": "KO_Carbon_P",
