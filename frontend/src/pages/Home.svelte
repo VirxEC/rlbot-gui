@@ -7,6 +7,7 @@ import {
   BotInfo,
   ExtraOptions,
   PlayerJs,
+  Result,
   type StartMatchOptions,
 } from "../../bindings/gui/index.js";
 import arenaImages from "../arena-images";
@@ -318,7 +319,8 @@ async function onMatchStart(randomizeMap: boolean) {
       ];
   }
 
-  function playerMap(draggable: DraggablePlayer): PlayerJs {
+  // this syntax makes more sense when inside of another function
+  const playerMap = (draggable: DraggablePlayer): PlayerJs => {
     let clone = { ...draggable };
     if (clone.player instanceof BotInfo) {
       clone.player = BotInfo.createFrom(structuredClone(clone.player));
@@ -352,7 +354,16 @@ async function onMatchStart(randomizeMap: boolean) {
   });
   startMatchToastId = toastId;
 
-  const response = await App.StartMatch(options);
+  let response;
+  try {
+    response = await App.StartMatch(options);
+  } catch(e) {
+    toast.error(`Match start failed\n${e}`, {
+      id: toastId,
+      duration: 10000,
+    });
+    return;
+  }
 
   if (toastId !== startMatchToastId) return;
   startMatchToastId = null;
