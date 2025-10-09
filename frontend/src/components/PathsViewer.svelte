@@ -5,8 +5,13 @@ import closeIcon from "../assets/close.svg";
 import repairIcon from "../assets/repair.svg";
 import Modal from "./Modal.svelte";
 import Switch from "./Switch.svelte";
+import ProgressBar from "./ProgressBar.svelte";
+import { Events } from "@wailsio/runtime";
 
-const OFFICIAL_BOTPACK_REPO = "VirxEC/botpack-test";
+const OFFICIAL_BOTPACK_REPOS = [
+  "VirxEC/botpack-test",
+  "VirxEC/pytorch-archive",
+];
 
 let {
   visible = $bindable(false),
@@ -18,6 +23,7 @@ let {
     repo: string | null;
     installPath: string;
     visible: boolean;
+    isDependency: boolean;
   }[];
 } = $props();
 
@@ -34,24 +40,70 @@ async function setDefaultPath() {
 setDefaultPath();
 
 function removePath(index: number) {
-  paths.splice(index, 1);
+  const [removedItem] = paths.splice(index, 1);
+
+  const dependency = paths.findIndex(
+    (item) => item.installPath === removedItem.installPath,
+  );
+  if (dependency !== -1) removePath(dependency);
 }
 
-function repairBotpack(index: number) {
-  const id = toast.loading("Re-downloading botpack...");
+let downloadModalTitle = $state("Downloading & extracting repo/owner");
+let downloadModalVisible = $state(false);
+let downloadProgress = $state(0);
+let downloadCurrentStep = $state(0);
+let downloadTotalSteps = $state(0);
 
-  // @ts-ignore
-  App.RepairBotpack(paths[index].repo, paths[index].installPath)
-    .then((tagName) => {
-      paths[index].tagName = tagName;
-      toast.success("Botpack download successfully!", { id });
-    })
-    .catch((err) => {
-      toast.error(`Failed to download botpack: ${err}`, {
-        duration: 10000,
-        id,
-      });
-    });
+Events.On("monitor:download-progress", (event) => {
+  const { status, done } = event.data.at(-1);
+
+  if (done) {
+    downloadProgress = 0;
+    downloadCurrentStep += 1;
+  } else {
+    downloadProgress = status;
+  }
+});
+
+async function repairBotpack(index: number) {
+  const info = paths[index];
+  if (!info.repo) {
+    return; // can't update something that doesn't have a repo
+  }
+
+  downloadProgress = 0;
+  downloadCurrentStep = 0;
+  downloadTotalSteps = 0;
+
+  for (const item of paths) {
+    if (item.installPath !== info.installPath) continue;
+    downloadTotalSteps += 2;
+  }
+
+  for (const item of paths) {
+    if (item.installPath !== info.installPath) continue;
+
+    downloadModalTitle = `Redownloading & extracting ${item.repo}`;
+    visible = false;
+    downloadModalVisible = true;
+
+    let tagName = await App.RepairBotpack(info.repo, info.installPath).catch(
+      (err) => {
+        toast.error(`Failed to download botpack: ${err}`, {
+          duration: 10000,
+        });
+
+        return null;
+      },
+    );
+    if (!tagName) break;
+
+    downloadProgress = 0;
+    downloadCurrentStep += 1;
+  }
+
+  downloadModalVisible = false;
+  visible = true;
 }
 
 function openAddBotpackModal() {
@@ -60,6 +112,7 @@ function openAddBotpackModal() {
 }
 
 function closeAddBotpackModal() {
+  downloadModalVisible = false;
   addBotpackVisible = false;
   visible = true;
   selectedBotpackType = "official";
@@ -78,6 +131,7 @@ function addInstallPath(installPath: string) {
     visible: true,
     tagName: null,
     repo: null,
+    isDependency: false,
   });
 }
 
@@ -100,20 +154,21 @@ function addFile() {
 
       addInstallPath(result);
     })
-    .catch((error) => {
+    .catch((_) => {
       toast.error(
         "Failed to add file: Only bot.toml or script.toml files are allowed",
       );
     });
 }
 
-function confirmAddBotpack() {
+async function confirmAddBotpack() {
   if (!installPath) {
     toast.error("Install path cannot be blank");
     return;
   }
 
-  let repo = OFFICIAL_BOTPACK_REPO;
+  let repo: string, dep: string | null;
+
   if (selectedBotpackType === "custom") {
     if (!customRepo) {
       toast.error("URL cannot be blank");
@@ -126,32 +181,80 @@ function confirmAddBotpack() {
     }
 
     repo = customRepo;
-  }
-
-  if (paths.some((x) => x.repo === repo)) {
-    toast.error("Botpack already added");
-    return;
+    dep = null;
+  } else {
+    [repo, dep] = OFFICIAL_BOTPACK_REPOS;
   }
 
   if (paths.some((x) => x.installPath === installPath)) {
-    toast.error("Install path already in use");
+    toast.error(`Install path "${installPath}" already in use for ${repo}`);
     return;
   }
 
-  const id = toast.loading("Downloading botpack...");
-  App.DownloadBotpack(repo, installPath)
-    .then((tagName) => {
-      toast.success("Botpack downloaded successfully!", { id });
+  if (paths.some((x) => x.repo === repo)) {
+    toast.error(`Botpack ${repo} already added`);
+    return;
+  }
 
-      paths.push({ installPath, repo, tagName, visible: true });
-      closeAddBotpackModal();
-    })
-    .catch((err) => {
-      toast.error(`Failed to download botpack: ${err}`, {
-        duration: 10000,
-        id,
-      });
+  downloadModalTitle = `Downloading & extracting ${repo}`;
+  downloadProgress = 0;
+  addBotpackVisible = false;
+  downloadModalVisible = true;
+  downloadCurrentStep = 0;
+  downloadTotalSteps = dep ? 4 : 2;
+
+  const tagName = await App.DownloadBotpack(repo, installPath).catch((err) => {
+    toast.error(`Failed to download botpack: ${err}`, {
+      duration: 10000,
     });
+
+    return null;
+  });
+  if (!tagName) {
+    downloadModalVisible = false;
+    addBotpackVisible = true;
+    return;
+  }
+
+  if (dep) {
+    downloadModalTitle = `Downloading & extracting ${dep}`;
+    downloadProgress = 0;
+    downloadCurrentStep += 1;
+
+    // Download possible dependency of the given botpack
+    const tagName = await App.DownloadBotpack(dep, installPath).catch((err) => {
+      toast.error(`Failed to download botpack dependency: ${err}`, {
+        duration: 10000,
+      });
+
+      return null;
+    });
+    if (!tagName) {
+      downloadModalVisible = false;
+      addBotpackVisible = true;
+      return;
+    }
+  }
+
+  paths.push({
+    installPath,
+    repo,
+    tagName,
+    visible: true,
+    isDependency: false,
+  });
+  if (dep) {
+    paths.push({
+      installPath,
+      repo: dep,
+      tagName,
+      visible: false,
+      isDependency: true,
+    });
+  }
+
+  toast.success("Botpack downloaded successfully!");
+  closeAddBotpackModal();
 }
 </script>
 
@@ -164,20 +267,26 @@ function confirmAddBotpack() {
     </div>
 
     {#each paths as path, i}
-      <div class="path">
-        <pre>{path.repo ? `${path.repo} @ ${path.installPath}` : path.installPath}</pre>
-        {#if path.repo}
-          <button class="no-left-margin repair" onclick={() => repairBotpack(i)}>
-            <img src={repairIcon} alt="repair" />
+      {#if path.isDependency}
+        <div class="path" style="margin-left: 50px;">
+          <pre>{path.repo}</pre>
+        </div>
+      {:else}
+        <div class="path">
+          <pre>{path.repo ? `${path.repo} @ ${path.installPath}` : path.installPath}</pre>
+          {#if path.repo}
+            <button class="no-left-margin repair" onclick={() => repairBotpack(i)}>
+              <img src={repairIcon} alt="repair" />
+            </button>
+            <div><Switch bind:checked={path.visible} /></div>
+          {:else}
+            <div class="no-left-margin"><Switch bind:checked={path.visible} /></div>
+          {/if}
+          <button class="close" onclick={() => removePath(i)}>
+            <img src={closeIcon} alt="X" />
           </button>
-          <div><Switch bind:checked={path.visible} /></div>
-        {:else}
-          <div class="no-left-margin"><Switch bind:checked={path.visible} /></div>
-        {/if}
-        <button class="close" onclick={() => removePath(i)}>
-          <img src={closeIcon} alt="X" />
-        </button>
-      </div>
+        </div>
+      {/if}
     {/each}
   </div>
 </Modal>
@@ -204,6 +313,10 @@ function confirmAddBotpack() {
       <button onclick={closeAddBotpackModal}>Cancel</button>
     </div>
   </div>
+</Modal>
+
+<Modal title={downloadModalTitle} bind:visible={downloadModalVisible} closeable={false}>
+  <ProgressBar percentComplete={downloadProgress} currentStep={downloadCurrentStep} totalSteps={downloadTotalSteps} />
 </Modal>
 
 <style>

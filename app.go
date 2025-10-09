@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -12,6 +13,7 @@ import (
 	rlbot "github.com/RLBot/go-interface"
 	"github.com/RLBot/go-interface/flat"
 	"github.com/ncruces/zenity"
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 type RawReleaseInfo struct {
@@ -21,6 +23,7 @@ type RawReleaseInfo struct {
 
 // App struct
 type App struct {
+	app               *application.App
 	latestReleaseJson []RawReleaseInfo
 	rlbotAddress      string
 }
@@ -70,7 +73,11 @@ func (a *App) DownloadBotpack(repo string, installPath string) (string, error) {
 		}
 	}
 
-	err = DownloadExtractArchive(downloadUrl, installPath)
+	if downloadUrl == "" {
+		return "", fmt.Errorf("Failed to find %s in latest release for %s", fileName, repo)
+	}
+
+	err = DownloadExtractArchive(a.app.Event, downloadUrl, installPath)
 	if err != nil {
 		return "", err
 	}
@@ -103,9 +110,17 @@ func NewApp() *App {
 
 	var latest_release_json []RawReleaseInfo
 	return &App{
+		nil,
 		latest_release_json,
 		rlbot_address,
 	}
+}
+
+func (a *App) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+	// You can access the application instance via ctx
+	a.app = application.Get()
+
+	return nil
 }
 
 func recursiveTomlSearch(root, tomlType string) ([]string, error) {

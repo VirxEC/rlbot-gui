@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/ulikunitz/xz"
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 type GhRelease struct {
@@ -142,20 +143,69 @@ func extractTar(tr *tar.Reader, dst string) error {
 	}
 }
 
-func DownloadExtractArchive(url string, dest string) error {
+type WriteCounter struct {
+	EventMngr *application.EventManager
+	Current   uint64
+	Total     uint64
+	LastEmit  uint64
+}
+
+func (wc *WriteCounter) Write(p []byte) (int, error) {
+	n := len(p)
+	wc.Current += uint64(n)
+	wc.EmitProgess()
+	return n, nil
+}
+
+func (wc *WriteCounter) EmitProgess() {
+	// Don't emit sub-percentage-point updates
+	percent := uint64(float64(wc.Current) / float64(wc.Total) * 100)
+	if percent == wc.LastEmit {
+		return
+	}
+	wc.LastEmit = percent
+
+	if wc.EventMngr == nil {
+		return
+	}
+	wc.EventMngr.Emit("monitor:download-progress", map[string]any{
+		"status": percent,
+		"done":   false,
+	})
+}
+
+func DownloadExtractArchive(eventMngr *application.EventManager, url string, dest string) error {
 	resp, err := http.Get(url)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	// Measure download progress
+	counter := &WriteCounter{
+		EventMngr: eventMngr,
+		Total:     uint64(resp.ContentLength),
+	}
+	progressEmitter := io.TeeReader(resp.Body, counter)
+	body, err := io.ReadAll(progressEmitter)
 	if err != nil {
 		return err
 	}
 
+	eventMngr.Emit("monitor:download-progress", map[string]any{
+		"status": 100,
+		"done":   true,
+	})
+
+	// Measure extraction progress
+	counter = &WriteCounter{
+		EventMngr: eventMngr,
+		Total:     uint64(len(body)),
+	}
+	progressEmitter = io.TeeReader(bytes.NewReader(body), counter)
+
 	// body is a .tar.xz file
-	xzr, err := xz.NewReader(bytes.NewReader(body))
+	xzr, err := xz.NewReader(progressEmitter)
 	if err != nil {
 		return err
 	}
