@@ -76,28 +76,32 @@ async function repairBotpack(index: number) {
   downloadTotalSteps = 0;
 
   for (const item of paths) {
-    if (item.installPath !== info.installPath) continue;
+    if (!item.repo || item.installPath !== info.installPath) continue;
     downloadTotalSteps += 2;
   }
 
+  let clearInstallPath = true;
   for (const item of paths) {
-    if (item.installPath !== info.installPath) continue;
+    if (!item.repo || item.installPath !== info.installPath) continue;
 
     downloadModalTitle = `Redownloading & extracting ${item.repo}`;
     visible = false;
     downloadModalVisible = true;
 
-    let tagName = await App.RepairBotpack(info.repo, info.installPath).catch(
-      (err) => {
-        toast.error(`Failed to download botpack: ${err}`, {
-          duration: 10000,
-        });
+    let tagName = await App.RepairBotpack(
+      item.repo,
+      item.installPath,
+      clearInstallPath,
+    ).catch((err) => {
+      toast.error(`Failed to download botpack: ${err}`, {
+        duration: 10000,
+      });
 
-        return null;
-      },
-    );
+      return null;
+    });
     if (!tagName) break;
 
+    clearInstallPath = false;
     downloadProgress = 0;
     downloadCurrentStep += 1;
   }

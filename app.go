@@ -85,10 +85,12 @@ func (a *App) DownloadBotpack(repo string, installPath string) (string, error) {
 	return latestRelease.TagName, nil
 }
 
-func (a *App) RepairBotpack(repo string, installPath string) (string, error) {
-	err := os.RemoveAll(installPath)
-	if err != nil {
-		return "", err
+func (a *App) RepairBotpack(repo string, installPath string, clearInstallPath bool) (string, error) {
+	if clearInstallPath {
+		err := os.RemoveAll(installPath)
+		if err != nil {
+			return "", err
+		}
 	}
 
 	return a.DownloadBotpack(repo, installPath)
