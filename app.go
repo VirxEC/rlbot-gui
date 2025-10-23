@@ -127,16 +127,21 @@ func (a *App) ServiceStartup(ctx context.Context, options application.ServiceOpt
 
 func recursiveTomlSearch(root, tomlType string) ([]string, error) {
 	var matches []string
-	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+	err := filepath.WalkDir(root, func(path string, entry os.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
 
-		if info.IsDir() || filepath.Ext(info.Name()) != ".toml" {
+		// Skip certain directories
+		if entry.IsDir() && (entry.Name() == "venv" || entry.Name() == ".venv" || strings.HasPrefix(entry.Name(), ".")) {
+			return filepath.SkipDir
+		}
+
+		if entry.IsDir() || filepath.Ext(entry.Name()) != ".toml" {
 			return nil
 		}
 
-		if info.Name() == tomlType+".toml" || strings.HasSuffix(info.Name(), "."+tomlType+".toml") {
+		if entry.Name() == tomlType+".toml" || strings.HasSuffix(entry.Name(), "."+tomlType+".toml") {
 			matches = append(matches, path)
 		}
 
