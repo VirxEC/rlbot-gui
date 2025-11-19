@@ -19,7 +19,7 @@ type RHostBot struct {
 }
 
 func (a *App) GetRHostBots() ([]RHostBot, error) {
-	resp, err := http.Get("https://rocketleaguemaps.us/api/botList2.json")
+	resp, err := http.Get("https://rockethost.jetfox.ovh/api/botList2.json")
 	if err != nil {
 		return nil, err
 	}
