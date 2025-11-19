@@ -49,7 +49,7 @@ func (a *App) GetDefaultPath() string {
 		xdgDataHome = filepath.Join(home, ".local/share")
 	}
 
-	return filepath.Join(xdgDataHome, "rlbotgui")
+	return filepath.Join(xdgDataHome, "RLBot5")
 }
 
 func (a *App) DownloadBotpack(repo string, installPath string) (string, error) {

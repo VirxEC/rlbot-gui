@@ -9,7 +9,6 @@ import {
   Result,
   type StartMatchOptions,
 } from "../../bindings/gui/index.js";
-import arenaImages from "../arena-images";
 import { MAPS_STANDARD } from "../arena-names";
 import reloadIcon from "../assets/reload.svg";
 import { BASE_PLAYERS } from "../base-players";
@@ -41,9 +40,6 @@ let {
     isDependency: boolean;
   }[];
 } = $props();
-
-const backgroundImage =
-  arenaImages[Math.floor(Math.random() * arenaImages.length)];
 
 let botpackNotifIds: { [repo: string]: string } = {};
 
@@ -407,7 +403,7 @@ function handleSearch(event: Event) {
 }
 </script>
 
-<div class="page" style={`background-image: url("${backgroundImage}")`}>
+<div class="page">
   <div class="availableBots box">
     <header>
       <h1>Bots</h1>
@@ -464,10 +460,6 @@ function handleSearch(event: Event) {
     display: flex;
     flex-direction: column;
     overflow: auto;
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-attachment: fixed;
   }
   .page * {
     user-select: none;

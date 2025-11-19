@@ -10,11 +10,9 @@ const OFFICIAL_BOTPACK_REPOS = [
 ];
 
 let {
-  parentVisible = $bindable(false),
   visible = $bindable(false),
   paths = $bindable([]),
 }: {
-  parentVisible?: boolean;
   visible?: boolean;
   paths?: {
     tagName: string | null;
@@ -45,7 +43,6 @@ let downloadTotalSteps = $state(0);
 function closeAddBotpackModal() {
   downloadModalVisible = false;
   visible = false;
-  parentVisible = true;
   selectedBotpackType = "official";
   customRepo = "";
   setDefaultPath();

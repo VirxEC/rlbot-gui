@@ -1,3 +1,5 @@
+<script></script>
+
 <div class="container">
   <h1>Coming soon...</h1>
 </div>
@@ -9,5 +11,8 @@
     width: 100%;
     justify-content: center;
     align-items: center;
+  }
+  h1 {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
   }
 </style>

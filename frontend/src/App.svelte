@@ -8,10 +8,24 @@ import GuiSettings from "./components/GuiSettings.svelte";
 import Home from "./pages/Home.svelte";
 import RocketHost from "./pages/RocketHost.svelte";
 import StoryMode from "./pages/StoryMode.svelte";
-import Welcome from "./components/Welcome.svelte";
+import Welcome from "./pages/Welcome.svelte";
 import { parseJSON } from "./index";
+import arenaImages from "./arena-images";
 
-let activePage = $state("home");
+const backgroundImage =
+  arenaImages[Math.floor(Math.random() * arenaImages.length)];
+
+let activePage = $state(
+  localStorage.getItem("SHOW_WELCOME") !== "false" ? "welcome" : "home",
+);
+
+$effect(() => {
+  if (activePage === "welcome") {
+    localStorage.setItem("SHOW_WELCOME", "true");
+  } else {
+    localStorage.setItem("SHOW_WELCOME", "false");
+  }
+});
 
 let eventsNow = $state(0);
 let eventsFuture = $state(0);
@@ -30,8 +44,8 @@ let paths: {
 
 <Toaster />
 
-<main>
-  <div class="navbar">
+<main style={`background-image: url("${backgroundImage}")`}>
+  <div class={"navbar " + (activePage == "welcome" ? "offset" : "")}>
     <div>
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -90,33 +104,42 @@ let paths: {
             onclick={()=>{showGuiSettings = true}}
             >GUI Settings</button
           >
+          <button
+            onclick={()=>{activePage = "welcome"}}
+            >Re-open setup screen</button
+          >
         </div>
       </div>
     </div>
   </div>
 
   <div
-    class={activePage == "home" ? "pageContainer" : "pageContainer hidden"}
+    class={"pageContainer" + (activePage == "home" ? "" : " hidden")}
   >
     <Home bind:paths />
   </div>
 
   <div
-    class={activePage == "rhost" ? "pageContainer" : "pageContainer hidden"}
+    class={"pageContainer" + (activePage == "rhost" ? "" : " hidden")}
   >
     <RocketHost />
   </div>
 
   <div
-    class={activePage == "storymode" ? "pageContainer" : "pageContainer hidden"}
+    class={"pageContainer" + (activePage == "storymode" ? "" : " hidden")}
   >
     <StoryMode />
+  </div>
+
+  <div
+    class={"pageContainer" + (activePage == "welcome" ? "" : " hidden")}
+  >
+    <Welcome bind:paths closeMe={()=>{activePage = "home"}} />
   </div>
 </main>
 
 <Events bind:visible={eventsVisible} bind:eventsNow bind:eventsFuture />
 <GuiSettings bind:visible={showGuiSettings} />
-<Welcome bind:paths />
 
 <style>
   main {
@@ -124,14 +147,27 @@ let paths: {
     height: 100%;
     width: 100%;
     flex-direction: column;
+
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: fixed;
   }
   .navbar {
     display: flex;
     height: 3rem;
     justify-content: space-between;
     padding: 0.1rem;
+    /* Nice transparent blur */
+    background-color: rgba(0, 0, 0, 0.6);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
     /* background: var(--background-alt);
     color: var(--foreground-alt); */
+    transition: translate 0.2s ease-in-out;
+  }
+  .navbar.offset {
+    translate: 0 -100%;
   }
   .navbar > div {
     display: flex;

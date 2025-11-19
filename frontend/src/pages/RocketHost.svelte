@@ -239,13 +239,14 @@ let launcherOptionsVisible = $state(false);
 <style>
   .page {
     display: flex;
-    width: fit-content;
-    height: 100%;
-    max-width: 60rem;
-    margin: 0px 3rem;
+    height: fit-content;
+    min-width: min(80vh, 100vw);
+    background-color: var(--background);
+    padding: 2rem;
+    border-radius: 1rem;
+    margin-top: 3rem;
     flex-direction: column;
     align-items: center;
-    padding: 1rem;
     gap: 1.5rem;
   }
   h2 {
