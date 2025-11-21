@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -47,7 +48,7 @@ func main() {
 		// Not possible on linux unfortunately
 		// TODO: Another reason to switch away from localstorage
 		Windows: application.WindowsOptions{
-			WebviewUserDataPath: "%APPDATA%\\RLBot5\\webviewdata",
+			WebviewUserDataPath: filepath.Join(os.Getenv("LOCALAPPDATA"), "RLBot5/webviewdata"),
 		},
 	})
 
