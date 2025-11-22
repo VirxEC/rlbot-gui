@@ -404,19 +404,19 @@ function SelectedToggleFavorite() {
 {#if selectedAgent}
   <div class="info-layout">
     <div class="info-main">
-      <p>Developers: {selectedAgent[0].config.details.developer}</p>
-      <p>Description: {selectedAgent[0].config.details.description}</p>
-      <p>Fun fact: {selectedAgent[0].config.details.funFact}</p>
-      <p>Source code:
+      <p><b>Developers:</b> {selectedAgent[0].config.details.developer}</p>
+      <p><b>Description:</b> {selectedAgent[0].config.details.description}</p>
+      <p><b>Fun fact:</b> {selectedAgent[0].config.details.funFact}</p>
+      <p><b>Source code:</b>
         <!-- svelte-ignore a11y_invalid_attribute -->
-        <a href="#" onclick={OpenSelectedBotSource} target="_blank">
+        <a href="javascript:" onclick={OpenSelectedBotSource} target="_blank">
           {selectedAgent[0].config.details.sourceLink}
         </a>
       </p>
-      <p>Language: {selectedAgent[0].config.details.language}</p>
+      <p><b>Language:</b> {selectedAgent[0].config.details.language}</p>
       {#if selectedAgent[0].config.details.tags.length > 0}
       <div class="tags">
-        Tags:
+        <b>Tags:</b>
         {#each selectedAgent[0].config.details.tags as tag}
           <span class="tag">{tag}</span>
         {/each}
