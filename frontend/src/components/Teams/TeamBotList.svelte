@@ -5,14 +5,21 @@ import { untrack } from "svelte";
 import { flip } from "svelte/animate";
 import { fade } from "svelte/transition";
 import type { DraggablePlayer } from "../..";
-import { BotInfo } from "../../../bindings/gui";
+import {BotInfo, PsyonixBotInfo} from "../../../bindings/gui";
 import closeIcon from "../../assets/close.svg";
 import duplicateIcon from "../../assets/duplicate.svg";
 import editIcon from "../../assets/edit.svg";
+import cannotAutoRunIcon from "../../assets/cannot_play.svg";
 import defaultIcon from "../../assets/rlbot_mono.png";
-import ModalPrompt from "../ModalPrompt.svelte";
+import PlayerOverridesModal from "./PlayerOverridesModal.svelte";
 
-let { items = $bindable() }: { items: DraggablePlayer[] } = $props();
+let {
+  items = $bindable(),
+  globalAutoStart = $bindable(true)
+}: {
+  items: DraggablePlayer[],
+  globalAutoStart: boolean,
+} = $props();
 
 function remove(id: string): any {
   items = items.filter((x) => x.id !== id);
@@ -24,61 +31,41 @@ function dupe(id: string): any {
     // Create a copy with a new ID
     const newItem = {
       ...items[index],
-      id: crypto.randomUUID(), // Generate a new unique ID
+      overrides: {...items[index].overrides},
+      id: crypto.randomUUID() // Generate a new unique ID
     };
     // Insert the new item after the original
     items = [...items.slice(0, index + 1), newItem, ...items.slice(index + 1)];
   }
 }
 
-let editPrompts: { [key: string]: ModalPrompt } = {};
-let editDataNames: { [key: string]: string } = $state({});
+let editedPlayer: DraggablePlayer | undefined = $state(undefined)
+let showEditPrompt = $state(false)
 
-// Update editDataNames once items updates, but try to keep as much state as possible
-// Once editing more stuff is supported, this approach should probably change
-$effect(() => {
-  let localEditDataNames = untrack(() => {
-    return editDataNames;
-  });
-  let updated = Object.fromEntries(
-    items
-      .filter((x) => {
-        return x.player instanceof BotInfo;
-      })
-      .map((bot) => {
-        return [
-          bot.id,
-          // use ! + ?: instead of ?? so that "" is treated as null
-          // this is due to the input binding value to "" before this is ran
-          !localEditDataNames[bot.id]
-            ? (<BotInfo>bot.player).config.settings.name
-            : localEditDataNames[bot.id],
-        ];
-      }),
-  );
-  untrack(() => {
-    editDataNames = updated;
-  });
-});
-
-async function edit_custom_bot(id: string): Promise<void> {
-  let modal = editPrompts[id];
-
-  let modified = await modal.prompt();
-  if (modified) {
-    const index = items.findIndex((x) => x.id === id);
-    let copy = {
-      ...items[index],
-      // We need to deepclone here to make sure we don't modify the player globally.
-      // We also need to do BotInfo.createFrom to make sure that instanceof BotInfo == true still.
-      player: BotInfo.createFrom(structuredClone(items[index].player)),
-    };
-    copy.modified = true;
-    if (copy.player instanceof BotInfo) {
-      copy.player.config.settings.name = editDataNames[id];
-    }
-    items[index] = copy;
+async function showEditModal(d: DraggablePlayer) {
+  if (d) {
+    editedPlayer = d
+    showEditPrompt = true;
   }
+}
+
+function reasonsForManualStart(d: DraggablePlayer): string[] {
+  let reasons: string[] = []
+  if (d.player instanceof BotInfo) {
+    if (!globalAutoStart) reasons.push("Auto-start disabled in Extra");
+    if (!d.player.config.settings.runCommand) reasons.push("No run_command declared");
+    if (!d.overrides.autoStart) reasons.push("Auto-start disabled for bot");
+  }
+  return reasons
+}
+
+function canAutoStart(d: DraggablePlayer): boolean {
+  return reasonsForManualStart(d).length == 0;
+}
+
+function hasOverrides(d: DraggablePlayer): boolean {
+  let expectedName = (d.player instanceof BotInfo) ? d.displayName : "";
+  return d.overrides.name !== expectedName || !d.overrides.autoStart || d.overrides.loadout != null
 }
 
 // :fire: :fire: :fire:
@@ -157,7 +144,7 @@ const dnd_container_namespace = `team_${crypto.randomUUID()}`;
         }}
         animate:flip={{ duration: 100 }}
         in:fade={{ duration: 100 }}
-				out:fade={{ duration: 100 }}
+        out:fade={{ duration: 100 }}
       >
         <div
           class="bot"
@@ -170,23 +157,22 @@ const dnd_container_namespace = `team_${crypto.randomUUID()}`;
           onclick={e => e.stopPropagation()}
         >
           <img src={bot.icon || defaultIcon} alt="icon" />
-          <p
-            style={bot.modified ? "color: orange" : ""}
-            title={bot.modified ? "(modified)" : undefined}
-          >{bot.displayName}</p>
+          <p>{bot.displayName === bot.overrides.name || (bot.player instanceof PsyonixBotInfo && bot.overrides.name === "") ? bot.displayName : `${bot.overrides.name}`}</p>
           {#if bot.uniquePathSegment}
             <span class="unique-bot-identifier">({bot.uniquePathSegment})</span>
           {/if}
-          <div style="flex: 1;"></div>
-          {#if bot.player instanceof BotInfo}
-            <button class="edit" title="edit" onclick={edit_custom_bot.bind(null, bot.id)}>
-              <img src={editIcon} alt="Dupe">
-            </button>
+          {#if !canAutoStart(bot)}
+            <img class="bot-icon" src={cannotAutoRunIcon} alt="No auto-run" title={`Must be launched manually (${reasonsForManualStart(bot).join("; ")})`}>
           {/if}
-          <!-- TODO: support editing psyonix bots too, skill level (and name?) -->
+          <div style="flex: 1;"></div>
           {#if !bot.tags.includes("human")}
             <button class="duplicate" title="Duplicate" onclick={dupe.bind(null, bot.id)}>
               <img src={duplicateIcon} alt="Dupe">
+            </button>
+          {/if}
+          {#if bot.player instanceof BotInfo || bot.player instanceof PsyonixBotInfo}
+            <button class={hasOverrides(bot) ? "edit has-overrides" : "edit"} title="Edit" onclick={() => showEditModal(bot)}>
+              <img src={editIcon} alt="Edit">
             </button>
           {/if}
           <button class="close" onclick={remove.bind(null, bot.id)}>
@@ -202,21 +188,7 @@ const dnd_container_namespace = `team_${crypto.randomUUID()}`;
   </div>
 </div>
 
-{#each items as bot (bot.id)}
-  <ModalPrompt title={"Edit " + bot.displayName} bind:this={editPrompts[bot.id]}>
-    <div style="display: flex; flex-direction: column;">
-      <label for={`edit-name-${bot.id}`}>Bot name (note: only in-game)</label>
-      <input
-        type="text"
-        placeholder="Bot name"
-        id={`edit-name-${bot.id}`}
-        bind:value={editDataNames[bot.id]}
-      >
-      <!-- TODO: Add a bunch of more stuff to edit, loadout etc -->
-      <!-- TODO: Perhaps add a way to save mods to bots as new tomls? -->
-    </div>
-  </ModalPrompt>
-{/each}
+<PlayerOverridesModal bind:player={editedPlayer} bind:visible={showEditPrompt} />
 
 <style>
   * {
@@ -282,18 +254,32 @@ const dnd_container_namespace = `team_${crypto.randomUUID()}`;
   .bot:not(:hover) :is(.duplicate, .edit) {
     visibility: hidden;
   }
+  .has-overrides img {
+    visibility: visible;
+  }
   .close, .duplicate, .edit {
     background-color: transparent;
     height: 100%;
     padding: 0;
   }
   .duplicate {
-    padding: 0 .2rem;
+    padding: 0 .1rem;
   }
   :is(.close, .duplicate, .edit) img {
     height: 100%;
     width: auto;
     filter: invert();
+  }
+  :is(.has-overrides) img {
+    filter: invert(68%) sepia(66%) saturate(2755%) hue-rotate(360deg) brightness(103%) contrast(104%);
+  }
+  .bot-icon {
+    background-color: transparent;
+    padding: 0 .1rem;
+    margin: .4rem 0;
+    height: 100%;
+    width: auto;
+    filter: invert(60%);
   }
   .unique-bot-identifier {
     color: #868686;

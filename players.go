@@ -49,17 +49,32 @@ type Player interface {
 }
 
 type PsyonixBotInfo struct {
+	Name    string         `json:"name"`
+	Loadout *LoadoutConfig `json:"loadout,omitempty"`
 	// Beginner: 0, Rookie: 1, Pro: 2, AllStar: 3
 	Skill byte `json:"skill"`
 }
 
 func (info PsyonixBotInfo) ToPlayerConfig(team uint32) *flat.PlayerConfigurationT {
+
+	var loadout *flat.PlayerLoadoutT = nil
+	if info.Loadout != nil {
+		var teamLoadout *TeamLoadoutConfig
+		if team == 0 {
+			teamLoadout = &info.Loadout.Blue
+		} else {
+			teamLoadout = &info.Loadout.Orange
+		}
+
+		loadout = teamLoadout.ToPlayerLoadout()
+	}
+
 	return &flat.PlayerConfigurationT{
 		Variety: &flat.PlayerClassT{
 			Type: flat.PlayerClassPsyonixBot,
 			Value: &flat.PsyonixBotT{
-				Name:     "",
-				Loadout:  nil,
+				Name:     info.Name,
+				Loadout:  loadout,
 				BotSkill: flat.PsyonixSkill(info.Skill),
 			},
 		},
@@ -279,11 +294,9 @@ func (a *App) GetBots(paths []string) []BotInfo {
 		var loadout *LoadoutConfig = nil
 		if conf.Settings.LoadoutFile != "" {
 			loadoutPath := filepath.Join(filepath.Dir(potentialConfigPath), conf.Settings.LoadoutFile)
-			loadoutData, err := os.ReadFile(loadoutPath)
+			loadout, err = a.GetLoadout(loadoutPath)
 			if err != nil {
 				println("WARN: failed to read loadout file at " + conf.Settings.LoadoutFile)
-			} else {
-				toml.Decode(string(loadoutData), &loadout)
 			}
 		}
 
@@ -300,4 +313,17 @@ func (a *App) GetBots(paths []string) []BotInfo {
 	})
 
 	return infos
+}
+
+func (a *App) GetLoadout(path string) (*LoadoutConfig, error) {
+	loadoutData, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	var loadout *LoadoutConfig = nil
+	_, err = toml.Decode(string(loadoutData), &loadout)
+	if err != nil {
+		return nil, err
+	}
+	return loadout, nil
 }
